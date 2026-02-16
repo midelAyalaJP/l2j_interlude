@@ -1,6 +1,7 @@
 package net.sf.l2j.geodataconverter;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteOrder;
@@ -18,155 +19,129 @@ import net.sf.l2j.gameserver.geoengine.geodata.GeoFormat;
 import net.sf.l2j.gameserver.geoengine.geodata.GeoStructure;
 import net.sf.l2j.gameserver.model.L2World;
 
-/**
- * @author Hasha
- */
 public final class GeoDataConverter
 {
 	private static GeoFormat _format;
 	private static ABlock[][] _blocks;
-	
+
+	private static final int MAX_TOLERATED_REMAINING_BYTES = 8;
+
 	public static void main(String[] args)
 	{
-		// initialize config
 		Config.loadGeodataConverter();
-		
-		// get geodata format
+
 		String type = "";
 		try (Scanner scn = new Scanner(System.in))
 		{
 			while (!(type.equalsIgnoreCase("J") || type.equalsIgnoreCase("O") || type.equalsIgnoreCase("E")))
 			{
 				System.out.println("GeoDataConverter: Select source geodata type:");
-				System.out.println("  J: L2J (e.g. 23_22.l2j)");
-				System.out.println("  O: L2OFF (e.g. 23_22_conv.dat)");
+				System.out.println("  J: L2J");
+				System.out.println("  O: L2OFF");
 				System.out.println("  E: Exit");
 				System.out.print("Choice: ");
 				type = scn.next();
 			}
 		}
+
 		if (type.equalsIgnoreCase("E"))
 			System.exit(0);
-		
+
 		_format = type.equalsIgnoreCase("J") ? GeoFormat.L2J : GeoFormat.L2OFF;
-		
-		// start conversion
-		System.out.println("GeoDataConverter: Converting all " + _format.toString() + " according to listing in \"geoengine.properties\" config file.");
-		
-		// initialize geodata container
+
+		System.out.println("GeoDataConverter: Starting conversion from " + _format);
+
 		_blocks = new ABlock[GeoStructure.REGION_BLOCKS_X][GeoStructure.REGION_BLOCKS_Y];
-		
-		// initialize multilayer temporarily buffer
 		BlockMultilayer.initialize();
-		
-		// load geo files according to geoengine config setup
+
 		final ExProperties props = Config.initProperties(Config.GEOENGINE_FILE);
 		int converted = 0;
+
 		for (int rx = L2World.TILE_X_MIN; rx <= L2World.TILE_X_MAX; rx++)
 		{
 			for (int ry = L2World.TILE_Y_MIN; ry <= L2World.TILE_Y_MAX; ry++)
 			{
-				if (props.containsKey(String.valueOf(rx) + "_" + String.valueOf(ry)))
-				{
-					// load geodata
-					final String input = String.format(_format.getFilename(), rx, ry);
-					if (!loadGeoBlocks(input))
-					{
-						System.out.println("GeoDataConverter: Unable to load " + input + " region file.");
-						continue;
-					}
-					
-					// recalculate nswe
-					if (!recalculateNswe())
-					{
-						System.out.println("GeoDataConverter: Unable to convert " + input + " region file.");
-						continue;
-					}
-					
-					// save geodata
-					final String output = String.format(GeoFormat.L2D.getFilename(), rx, ry);
-					if (!saveGeoBlocks(output))
-					{
-						System.out.println("GeoDataConverter: Unable to save " + output + " region file.");
-						continue;
-					}
-					
-					converted++;
-					System.out.println("GeoDataConverter: Created " + output + " region file.");
-				}
+				if (!props.containsKey(rx + "_" + ry))
+					continue;
+
+				final String input = String.format(_format.getFilename(), rx, ry);
+				if (!loadGeoBlocks(input))
+					continue;
+
+				if (!recalculateNswe())
+					continue;
+
+				final String output = String.format(GeoFormat.L2D.getFilename(), rx, ry);
+				if (!saveGeoBlocks(output))
+					continue;
+
+				converted++;
+				System.out.println("GeoDataConverter: Created " + output);
 			}
 		}
-		System.out.println("GeoDataConverter: Converted " + converted + " " + _format.toString() + " to L2D region file(s).");
-		
-		// release multilayer block temporarily buffer
+
+		System.out.println("GeoDataConverter: Successfully converted " + converted + " region(s).");
 		BlockMultilayer.release();
 	}
-	
-	/**
-	 * Loads geo blocks from buffer of the region file.
-	 * @param filename : The name of the to load.
-	 * @return boolean : True when successful.
-	 */
-	private static final boolean loadGeoBlocks(String filename)
+
+	private static boolean loadGeoBlocks(String filename)
 	{
-		// region file is load-able, try to load it
-		try (RandomAccessFile raf = new RandomAccessFile(Config.GEODATA_PATH + filename, "r"); FileChannel fc = raf.getChannel())
+		File file = new File(Config.GEODATA_PATH + filename);
+
+		if (!file.exists())
 		{
-			MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size()).load();
+			System.out.println("GeoDataConverter: File not found -> " + filename);
+			return false;
+		}
+
+		try (RandomAccessFile raf = new RandomAccessFile(file, "r");
+			 FileChannel fc = raf.getChannel())
+		{
+			MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
 			buffer.order(ByteOrder.LITTLE_ENDIAN);
-			
-			// load 18B header for L2off geodata (1st and 2nd byte...region X and Y)
-			if (_format == GeoFormat.L2OFF)
-			{
-				for (int i = 0; i < 18; i++)
-					buffer.get();
-			}
-			
-			// loop over region blocks
+
+			if (_format == GeoFormat.L2OFF && buffer.remaining() >= 18)
+				buffer.position(buffer.position() + 18);
+
 			for (int ix = 0; ix < GeoStructure.REGION_BLOCKS_X; ix++)
 			{
 				for (int iy = 0; iy < GeoStructure.REGION_BLOCKS_Y; iy++)
 				{
+					if (!buffer.hasRemaining())
+						return false;
+
 					if (_format == GeoFormat.L2J)
 					{
-						// get block type
-						final byte type = buffer.get();
-						
-						// load block according to block type
+						byte type = buffer.get();
+
 						switch (type)
 						{
 							case GeoStructure.TYPE_FLAT_L2J_L2OFF:
 								_blocks[ix][iy] = new BlockFlat(buffer, _format);
 								break;
-							
 							case GeoStructure.TYPE_COMPLEX_L2J:
 								_blocks[ix][iy] = new BlockComplex(buffer, _format);
 								break;
-							
 							case GeoStructure.TYPE_MULTILAYER_L2J:
 								_blocks[ix][iy] = new BlockMultilayer(buffer, _format);
 								break;
-							
 							default:
-								throw new IllegalArgumentException("Unknown block type: " + type);
+								System.out.println("Unknown block type: " + type + " in " + filename);
+								return false;
 						}
 					}
 					else
 					{
-						// get block type
-						final short type = buffer.getShort();
-						
-						// load block according to block type
+						short type = buffer.getShort();
+
 						switch (type)
 						{
 							case GeoStructure.TYPE_FLAT_L2J_L2OFF:
 								_blocks[ix][iy] = new BlockFlat(buffer, _format);
 								break;
-							
 							case GeoStructure.TYPE_COMPLEX_L2OFF:
 								_blocks[ix][iy] = new BlockComplex(buffer, _format);
 								break;
-							
 							default:
 								_blocks[ix][iy] = new BlockMultilayer(buffer, _format);
 								break;
@@ -174,27 +149,24 @@ public final class GeoDataConverter
 					}
 				}
 			}
-			
-			if (buffer.remaining() > 0)
+
+			int remaining = buffer.remaining();
+			if (remaining > MAX_TOLERATED_REMAINING_BYTES)
 			{
-				System.out.println("GeoDataConverter: Region file " + filename + " can be corrupted, remaining " + buffer.remaining() + " bytes to read.");
-				return false;
+				System.out.println("GeoDataConverter: Possible corruption in " + filename +
+						" (" + remaining + " extra bytes)");
 			}
-			
+
 			return true;
 		}
 		catch (Exception e)
 		{
-			System.out.println("GeoDataConverter: Error while loading " + filename + " region file.");
+			System.out.println("GeoDataConverter: Failed loading " + filename + " -> " + e.getMessage());
 			return false;
 		}
 	}
-	
-	/**
-	 * Recalculate diagonal flags for the region file.
-	 * @return boolean : True when successful.
-	 */
-	private static final boolean recalculateNswe()
+
+	private static boolean recalculateNswe()
 	{
 		try
 		{
@@ -202,116 +174,88 @@ public final class GeoDataConverter
 			{
 				for (int y = 0; y < GeoStructure.REGION_CELLS_Y; y++)
 				{
-					// get block
 					ABlock block = _blocks[x / GeoStructure.BLOCK_CELLS_X][y / GeoStructure.BLOCK_CELLS_Y];
-					
-					// skip flat blocks
-					if (block instanceof BlockFlat)
+					if (block == null || block instanceof BlockFlat)
 						continue;
-					
-					// for complex and multilayer blocks go though all layers
+
 					short height = Short.MAX_VALUE;
 					int index;
+
 					while ((index = block.getIndexBelow(x, y, height)) != -1)
 					{
-						// get height and nswe
 						height = block.getHeight(index);
 						byte nswe = block.getNswe(index);
-						
-						// update nswe with diagonal flags
-						nswe = updateNsweBelow(x, y, height, nswe);
-						
-						// set nswe of the cell
-						block.setNswe(index, nswe);
+						block.setNswe(index, updateNsweBelow(x, y, height, nswe));
 					}
 				}
 			}
-			
 			return true;
 		}
 		catch (Exception e)
 		{
+			System.out.println("NSWE recalculation failed: " + e.getMessage());
 			return false;
 		}
 	}
-	
-	/**
-	 * Updates the NSWE flag with diagonal flags.
-	 * @param x : Geodata X coordinate.
-	 * @param y : Geodata Y coordinate.
-	 * @param z : Geodata Z coordinate.
-	 * @param nswe : NSWE flag to be updated.
-	 * @return byte : Updated NSWE flag.
-	 */
-	private static final byte updateNsweBelow(int x, int y, short z, byte nswe)
+
+	private static byte updateNsweBelow(int x, int y, short z, byte nswe)
 	{
-		// calculate virtual layer height
-		short height = (short) (z + GeoStructure.CELL_IGNORE_HEIGHT);
-		
-		// get NSWE of neighbor cells below virtual layer (NPC/PC can fall down of clif, but can not climb it -> NSWE of cell below)
+		short height = (short)(z + GeoStructure.CELL_IGNORE_HEIGHT);
+
 		byte nsweN = getNsweBelow(x, y - 1, height);
 		byte nsweS = getNsweBelow(x, y + 1, height);
 		byte nsweW = getNsweBelow(x - 1, y, height);
 		byte nsweE = getNsweBelow(x + 1, y, height);
-		
-		// north-west
-		if (((nswe & GeoStructure.CELL_FLAG_N) != 0 && (nsweN & GeoStructure.CELL_FLAG_W) != 0) || ((nswe & GeoStructure.CELL_FLAG_W) != 0 && (nsweW & GeoStructure.CELL_FLAG_N) != 0))
+
+		if (((nswe & GeoStructure.CELL_FLAG_N) != 0 && (nsweN & GeoStructure.CELL_FLAG_W) != 0) ||
+			((nswe & GeoStructure.CELL_FLAG_W) != 0 && (nsweW & GeoStructure.CELL_FLAG_N) != 0))
 			nswe |= GeoStructure.CELL_FLAG_NW;
-		
-		// north-east
-		if (((nswe & GeoStructure.CELL_FLAG_N) != 0 && (nsweN & GeoStructure.CELL_FLAG_E) != 0) || ((nswe & GeoStructure.CELL_FLAG_E) != 0 && (nsweE & GeoStructure.CELL_FLAG_N) != 0))
+
+		if (((nswe & GeoStructure.CELL_FLAG_N) != 0 && (nsweN & GeoStructure.CELL_FLAG_E) != 0) ||
+			((nswe & GeoStructure.CELL_FLAG_E) != 0 && (nsweE & GeoStructure.CELL_FLAG_N) != 0))
 			nswe |= GeoStructure.CELL_FLAG_NE;
-		
-		// south-west
-		if (((nswe & GeoStructure.CELL_FLAG_S) != 0 && (nsweS & GeoStructure.CELL_FLAG_W) != 0) || ((nswe & GeoStructure.CELL_FLAG_W) != 0 && (nsweW & GeoStructure.CELL_FLAG_S) != 0))
+
+		if (((nswe & GeoStructure.CELL_FLAG_S) != 0 && (nsweS & GeoStructure.CELL_FLAG_W) != 0) ||
+			((nswe & GeoStructure.CELL_FLAG_W) != 0 && (nsweW & GeoStructure.CELL_FLAG_S) != 0))
 			nswe |= GeoStructure.CELL_FLAG_SW;
-		
-		// south-east
-		if (((nswe & GeoStructure.CELL_FLAG_S) != 0 && (nsweS & GeoStructure.CELL_FLAG_E) != 0) || ((nswe & GeoStructure.CELL_FLAG_E) != 0 && (nsweE & GeoStructure.CELL_FLAG_S) != 0))
+
+		if (((nswe & GeoStructure.CELL_FLAG_S) != 0 && (nsweS & GeoStructure.CELL_FLAG_E) != 0) ||
+			((nswe & GeoStructure.CELL_FLAG_E) != 0 && (nsweE & GeoStructure.CELL_FLAG_S) != 0))
 			nswe |= GeoStructure.CELL_FLAG_SE;
-		
+
 		return nswe;
 	}
-	
-	private static final byte getNsweBelow(int geoX, int geoY, short worldZ)
+
+	private static byte getNsweBelow(int geoX, int geoY, short worldZ)
 	{
-		// out of geo coordinates
-		if (geoX < 0 || geoX >= GeoStructure.REGION_CELLS_X)
+		if (geoX < 0 || geoX >= GeoStructure.REGION_CELLS_X ||
+			geoY < 0 || geoY >= GeoStructure.REGION_CELLS_Y)
 			return 0;
-		
-		// out of geo coordinates
-		if (geoY < 0 || geoY >= GeoStructure.REGION_CELLS_Y)
+
+		ABlock block = _blocks[geoX / GeoStructure.BLOCK_CELLS_X][geoY / GeoStructure.BLOCK_CELLS_Y];
+		if (block == null)
 			return 0;
-		
-		// get block
-		final ABlock block = _blocks[geoX / GeoStructure.BLOCK_CELLS_X][geoY / GeoStructure.BLOCK_CELLS_Y];
-		
-		// get index, when valid, return nswe
-		final int index = block.getIndexBelow(geoX, geoY, worldZ);
+
+		int index = block.getIndexBelow(geoX, geoY, worldZ);
 		return index == -1 ? 0 : block.getNswe(index);
 	}
-	
-	/**
-	 * Save region file to file.
-	 * @param filename : The name of file to save.
-	 * @return boolean : True when successful.
-	 */
-	private static final boolean saveGeoBlocks(String filename)
+
+	private static boolean saveGeoBlocks(String filename)
 	{
-		try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(Config.GEODATA_PATH + filename), GeoStructure.REGION_BLOCKS * GeoStructure.BLOCK_CELLS * 3))
+		try (BufferedOutputStream bos = new BufferedOutputStream(
+				new FileOutputStream(Config.GEODATA_PATH + filename)))
 		{
-			// loop over region blocks and save each block
 			for (int ix = 0; ix < GeoStructure.REGION_BLOCKS_X; ix++)
 				for (int iy = 0; iy < GeoStructure.REGION_BLOCKS_Y; iy++)
-					_blocks[ix][iy].saveBlock(bos);
-			
-			// flush data to file
+					if (_blocks[ix][iy] != null)
+						_blocks[ix][iy].saveBlock(bos);
+
 			bos.flush();
-			
 			return true;
 		}
 		catch (Exception e)
 		{
+			System.out.println("Save failed for " + filename + " -> " + e.getMessage());
 			return false;
 		}
 	}

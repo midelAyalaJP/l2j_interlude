@@ -97,7 +97,58 @@ public class Siege implements Siegable
 		
 		startAutoTask();
 	}
-	
+	/**
+	 * When siege starts.
+	 */
+	@Override
+	public void startSiege()
+	{
+		if (!_isInProgress)
+		{
+			
+			
+			if (getAttackerClans().isEmpty())
+			{
+				SystemMessage sm;
+				if (getCastle().getOwnerId() <= 0)
+					sm = SystemMessage.getSystemMessage(SystemMessageId.SIEGE_OF_S1_HAS_BEEN_CANCELED_DUE_TO_LACK_OF_INTEREST);
+				else
+					sm = SystemMessage.getSystemMessage(SystemMessageId.S1_SIEGE_WAS_CANCELED_BECAUSE_NO_CLANS_PARTICIPATED);
+				sm.addString(getCastle().getName());
+				Broadcast.toAllOnlinePlayers(sm);
+				saveCastleSiege(true);
+				return;
+			}
+			getSiegeGuardManager().despawnHired();
+			getSiegeGuardManager().despawnAll(); 
+			getSiegeGuardManager().spawnDefaultGuards();
+			_isNormalSide = true; // Atk is now atk
+			_isInProgress = true; // Flag so that same siege instance cannot be started again
+			changeStatus(SiegeStatus.IN_PROGRESS);
+		
+			loadSiegeClan(); // Load siege clan from db
+			updatePlayerSiegeStateFlags(false);
+			teleportPlayer(TeleportWhoType.ATTACKER, TeleportWhereType.TOWN); // Teleport to the closest town
+			
+			spawnControlTowers(); // Spawn control towers
+			spawnFlameTowers(); // Spawn flame towers
+			getCastle().closeDoors(); // Close doors
+			 
+			MercTicketManager.getInstance().deleteTickets(getCastle().getCastleId()); // remove the tickets from the ground
+			
+			getCastle().getZone().setIsActive(true);
+			getCastle().getZone().updateZoneStatusForCharactersInside();
+			
+			// Schedule a task to prepare auto siege end
+			_siegeEndDate = Calendar.getInstance();
+			_siegeEndDate.add(Calendar.MINUTE, Config.SIEGE_LENGTH);
+			ThreadPool.schedule(new ScheduleEndSiegeTask(getCastle()), 1000);
+			
+			Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.SIEGE_OF_S1_HAS_STARTED).addString(getCastle().getName()));
+			Broadcast.toAllOnlinePlayers(new PlaySound("systemmsg_e.17"));
+			
+		}
+	}
 	@Override
 	public void endSiege()
 	{
@@ -105,7 +156,9 @@ public class Siege implements Siegable
 		{
 			Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.SIEGE_OF_S1_HAS_ENDED).addString(getCastle().getName()));
 			Broadcast.toAllOnlinePlayers(new PlaySound("systemmsg_e.18"));
-			
+			 
+			getSiegeGuardManager().despawnAll();
+			getSiegeGuardManager().spawnDefaultGuards();
 			if (getCastle().getOwnerId() > 0)
 			{
 				L2Clan clan = ClanTable.getInstance().getClan(getCastle().getOwnerId());
@@ -177,8 +230,7 @@ public class Siege implements Siegable
 			saveCastleSiege(true); // Save castle specific data
 			clearSiegeClan(); // Clear siege clan from db
 			removeTowers(); // Remove all towers from this castle
-			_siegeGuardManager.unspawnSiegeGuard(); // Remove all spawned siege guard from this castle
-			
+
 			if (getCastle().getOwnerId() > 0)
 				_siegeGuardManager.removeMercs(); // Remove mercenaries
 				
@@ -209,7 +261,7 @@ public class Siege implements Siegable
 	{
 		if (_isInProgress) // Siege still in progress
 		{
-			_siegeGuardManager.unspawnSiegeGuard(); // Remove all spawned siege guard from this castle
+	 
 			
 			if (getCastle().getOwnerId() > 0)
 				_siegeGuardManager.removeMercs(); // Remove all merc entry from db
@@ -299,53 +351,7 @@ public class Siege implements Siegable
 		}
 	}
 	
-	/**
-	 * When siege starts.
-	 */
-	@Override
-	public void startSiege()
-	{
-		if (!_isInProgress)
-		{
-			if (getAttackerClans().isEmpty())
-			{
-				SystemMessage sm;
-				if (getCastle().getOwnerId() <= 0)
-					sm = SystemMessage.getSystemMessage(SystemMessageId.SIEGE_OF_S1_HAS_BEEN_CANCELED_DUE_TO_LACK_OF_INTEREST);
-				else
-					sm = SystemMessage.getSystemMessage(SystemMessageId.S1_SIEGE_WAS_CANCELED_BECAUSE_NO_CLANS_PARTICIPATED);
-				sm.addString(getCastle().getName());
-				Broadcast.toAllOnlinePlayers(sm);
-				saveCastleSiege(true);
-				return;
-			}
-			
-			_isNormalSide = true; // Atk is now atk
-			_isInProgress = true; // Flag so that same siege instance cannot be started again
-			changeStatus(SiegeStatus.IN_PROGRESS);
-			loadSiegeClan(); // Load siege clan from db
-			updatePlayerSiegeStateFlags(false);
-			teleportPlayer(TeleportWhoType.ATTACKER, TeleportWhereType.TOWN); // Teleport to the closest town
-			
-			spawnControlTowers(); // Spawn control towers
-			spawnFlameTowers(); // Spawn flame towers
-			getCastle().closeDoors(); // Close doors
-			spawnSiegeGuard(); // Spawn siege guard
-			MercTicketManager.getInstance().deleteTickets(getCastle().getCastleId()); // remove the tickets from the ground
-			
-			getCastle().getZone().setIsActive(true);
-			getCastle().getZone().updateZoneStatusForCharactersInside();
-			
-			// Schedule a task to prepare auto siege end
-			_siegeEndDate = Calendar.getInstance();
-			_siegeEndDate.add(Calendar.MINUTE, Config.SIEGE_LENGTH);
-			ThreadPool.schedule(new ScheduleEndSiegeTask(getCastle()), 1000);
-			
-			Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.SIEGE_OF_S1_HAS_STARTED).addString(getCastle().getName()));
-			Broadcast.toAllOnlinePlayers(new PlaySound("systemmsg_e.17"));
-			
-		}
-	}
+	
 	
 	private void removeDefender(L2SiegeClan sc)
 	{
@@ -1276,47 +1282,7 @@ public class Siege implements Siegable
 		}
 	}
 	
-	/**
-	 * Spawn siege guard.
-	 */
-	private void spawnSiegeGuard()
-	{
-		_siegeGuardManager.spawnSiegeGuard();
-		
-		// Register guard to the closest Control Tower - when CT dies, so do all the guards that it controls.
-		if (!_siegeGuardManager.getSiegeGuardSpawn().isEmpty() && !_controlTowers.isEmpty())
-		{
-			for (L2Spawn spawn : _siegeGuardManager.getSiegeGuardSpawn())
-			{
-				if (spawn == null)
-					continue;
-				
-				L2ControlTowerInstance closestCt = null;
-				double distanceClosest = Integer.MAX_VALUE;
-				
-				int x = spawn.getLocX();
-				int y = spawn.getLocY();
-				int z = spawn.getLocZ();
-				
-				for (L2ControlTowerInstance ct : _controlTowers)
-				{
-					if (ct == null)
-						continue;
-					
-					double distance = ct.getDistanceSq(x, y, z);
-					
-					if (distance < distanceClosest)
-					{
-						closestCt = ct;
-						distanceClosest = distance;
-					}
-				}
-				
-				if (closestCt != null)
-					closestCt.registerGuard(spawn);
-			}
-		}
-	}
+	 
 	
 	@Override
 	public final L2SiegeClan getAttackerClan(L2Clan clan)
