@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
@@ -39,6 +40,7 @@ import net.sf.l2j.gameserver.network.serverpackets.PlaySound;
 import net.sf.l2j.gameserver.network.serverpackets.SiegeInfo;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.network.serverpackets.UserInfo;
+import net.sf.l2j.gameserver.scriptings.Quest;
 import net.sf.l2j.gameserver.util.Broadcast;
 
 public class Siege implements Siegable
@@ -77,6 +79,17 @@ public class Siege implements Siegable
 	
 	private final SiegeGuardManager _siegeGuardManager;
 	
+	public enum SiegeStatus
+	{
+		REGISTRATION_OPENED, // Equals canceled or end siege event.
+		REGISTRATION_OVER,
+		IN_PROGRESS // Equals siege start event.
+	}
+	
+	private SiegeStatus _siegeStatus = SiegeStatus.REGISTRATION_OPENED;
+	
+	private List<Quest> _questEvents = Collections.emptyList();
+	
 	public Siege(Castle castle)
 	{
 		_castle = castle;
@@ -97,7 +110,6 @@ public class Siege implements Siegable
 			{
 				L2Clan clan = ClanTable.getInstance().getClan(getCastle().getOwnerId());
 				Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.CLAN_S1_VICTORIOUS_OVER_S2_S_SIEGE).addString(clan.getName()).addString(getCastle().getName()));
-				
 				
 				if (Config.ENABLE_WINNNER_REWARD_SIEGE_CLAN)
 				{
@@ -127,7 +139,7 @@ public class Siege implements Siegable
 						}
 					}
 				}
-		 		
+				
 			}
 			else
 				Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.SIEGE_S1_DRAW).addString(getCastle().getName()));
@@ -174,7 +186,7 @@ public class Siege implements Siegable
 			
 			getCastle().getZone().setIsActive(false);
 			getCastle().getZone().updateZoneStatusForCharactersInside();
-			 
+			
 		}
 	}
 	
@@ -187,7 +199,7 @@ public class Siege implements Siegable
 			player.sendMessage("Congratulations Leader! You've been rewarded for the " + getCastle().getName() + " siege victory!");
 			player.addItem("", Config.SIEGE_REWARD_ITEM, Config.SIEGE_AMOUNT_REWARD, player, true);
 		}
-	
+		
 	}
 	
 	/**
@@ -310,7 +322,7 @@ public class Siege implements Siegable
 			
 			_isNormalSide = true; // Atk is now atk
 			_isInProgress = true; // Flag so that same siege instance cannot be started again
-			
+			changeStatus(SiegeStatus.IN_PROGRESS);
 			loadSiegeClan(); // Load siege clan from db
 			updatePlayerSiegeStateFlags(false);
 			teleportPlayer(TeleportWhoType.ATTACKER, TeleportWhereType.TOWN); // Teleport to the closest town
@@ -331,7 +343,7 @@ public class Siege implements Siegable
 			
 			Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.SIEGE_OF_S1_HAS_STARTED).addString(getCastle().getName()));
 			Broadcast.toAllOnlinePlayers(new PlaySound("systemmsg_e.17"));
-		 
+			
 		}
 	}
 	
@@ -690,7 +702,6 @@ public class Siege implements Siegable
 		else if (checkIfCanRegister(player, ATTACKER))
 			saveSiegeClan(player.getClan(), ATTACKER);
 		
-		 
 	}
 	
 	/**
@@ -708,7 +719,7 @@ public class Siege implements Siegable
 		// Save to database
 		else if (checkIfCanRegister(player, DEFENDER_NOT_APPROVED))
 			saveSiegeClan(player.getClan(), DEFENDER_NOT_APPROVED);
-		 
+		
 	}
 	
 	/**
@@ -1216,6 +1227,7 @@ public class Siege implements Siegable
 		Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.S1_ANNOUNCED_SIEGE_TIME).addString(getCastle().getName()));
 		// changeStatus(SiegeStatus.REGISTRATION_OPENED);
 		_isRegistrationOver = false;
+		changeStatus(SiegeStatus.REGISTRATION_OPENED);
 	}
 	
 	/**
@@ -1529,6 +1541,7 @@ public class Siege implements Siegable
 					Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.REGISTRATION_TERM_FOR_S1_ENDED).addString(getCastle().getName()));
 					_isRegistrationOver = true;
 					clearSiegeWaitingClan();
+					changeStatus(SiegeStatus.REGISTRATION_OVER);
 					_scheduledStartSiegeTask = ThreadPool.schedule(new ScheduleStartSiegeTask(_castleInst), timeRemaining - 13600000);
 				}
 				else if ((timeRemaining <= 13600000) && (timeRemaining > 600000))
@@ -1547,5 +1560,31 @@ public class Siege implements Siegable
 				_log.log(Level.SEVERE, "", e);
 			}
 		}
+	}
+	
+	public void addQuestEvent(Quest quest)
+	{
+		if (_questEvents.isEmpty())
+			_questEvents = new ArrayList<>(3);
+		
+		_questEvents.add(quest);
+	}
+	
+	public List<Quest> getQuestEvents()
+	{
+		return _questEvents;
+	}
+	
+	public SiegeStatus getStatus()
+	{
+		return _siegeStatus;
+	}
+	
+	protected void changeStatus(SiegeStatus status)
+	{
+		_siegeStatus = status;
+		
+		for (Quest quest : _questEvents)
+			quest.onSiegeEvent();
 	}
 }

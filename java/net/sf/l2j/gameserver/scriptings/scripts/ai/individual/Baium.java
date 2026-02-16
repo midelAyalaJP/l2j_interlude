@@ -1,5 +1,6 @@
 package net.sf.l2j.gameserver.scriptings.scripts.ai.individual;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,8 +74,8 @@ public class Baium extends L2AttackableAIScript
 		addTalkId(STONE_BAIUM);
 		if (Config.WAIT_TIME_FOR_SPAWN_ALL_NPCS)
 	    {
-	        java.time.LocalTime now = java.time.LocalTime.now();
-	        java.time.LocalTime spawnTime = java.time.LocalTime.parse(Config.SPAWN_ALL_NPCS_TIME_OPEN_SERVER);
+	       LocalTime now = java.time.LocalTime.now();
+	       LocalTime spawnTime = java.time.LocalTime.parse(Config.SPAWN_ALL_NPCS_TIME_OPEN_SERVER);
 
 	        if (now.isBefore(spawnTime))
 	        {

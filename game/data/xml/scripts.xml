@@ -372,7 +372,7 @@
 
 	<script path="scripts.ai.individual.Antharas"/>
 	<script path="scripts.ai.individual.Baium"/>
-<!-- 	<script path="scripts.ai.individual.Benom"/> -->
+	<script path="scripts.ai.individual.Benom"/>
 	<script path="scripts.ai.individual.Core"/>
 	<script path="scripts.ai.individual.DrChaos"/>
 	<script path="scripts.ai.individual.Frintezza"/>

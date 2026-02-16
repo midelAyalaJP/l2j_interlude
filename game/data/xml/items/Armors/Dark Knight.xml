@@ -1,0 +1,237 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<list>
+	<!-- Heavy -->
+	<item id="9600" type="Armor" name="Dark Knight Helmet">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="head" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="103" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9601" type="Armor" name="Dark Knight Breastplate">
+		<set name="default_action" val="equip" />
+		<set name="armor_type" val="HEAVY" />
+		<set name="bodypart" val="chest" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="204" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9602" type="Armor" name="Dark Knight Gaiters">
+		<set name="default_action" val="equip" />
+		<set name="armor_type" val="HEAVY" />
+		<set name="bodypart" val="legs" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="160" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9603" type="Armor" name="Dark Knight Gauntlets">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="gloves" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="75" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9604" type="Armor" name="Dark Knight Boots">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="feet" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="75" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<!-- Light -->
+	<item id="9605" type="Armor" name="Dark Knight Leather Helmet">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="head" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="103" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9606" type="Armor" name="Dark Knight Leather Armor">
+		<set name="default_action" val="equip" />
+		<set name="armor_type" val="LIGHT" />
+		<set name="bodypart" val="chest" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="186" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9607" type="Armor" name="Dark Knight Leather Pants">
+		<set name="default_action" val="equip" />
+		<set name="armor_type" val="LIGHT" />
+		<set name="bodypart" val="legs" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="100" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9608" type="Armor" name="Dark Knight Leather Gloves">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="gloves" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="75" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9609" type="Armor" name="Dark Knight Leather Boots">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="feet" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="75" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<!-- Robe -->
+	<item id="9610" type="Armor" name="Dark Knight Circlet">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="head" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="103" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9611" type="Armor" name="Dark Knight Robe">
+		<set name="default_action" val="equip" />
+		<set name="armor_type" val="MAGIC" />
+		<set name="bodypart" val="chest" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="107" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9612" type="Armor" name="Dark Knight Stockings">
+		<set name="default_action" val="equip" />
+		<set name="armor_type" val="MAGIC" />
+		<set name="bodypart" val="legs" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="100" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9613" type="Armor" name="Dark Knight Gloves">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="gloves" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="75" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+	<item id="9614" type="Armor" name="Dark Knight Boots">
+		<set name="default_action" val="equip" />
+		<set name="bodypart" val="feet" />
+		<set name="crystal_type" val="S" />
+		<set name="crystal_count" val="715" />
+		<set name="material" val="SCALE_OF_DRAGON" />
+		<set name="weight" val="7620" />
+		<set name="price" val="14300000" />
+		<set name="is_oly_restricted" val="true" />
+		<for>
+			<add order="0x10" stat="pDef" val="75" />
+			<enchant order="0x0C" stat="pDef" val="0" />
+		</for>
+	</item>
+
+</list>
