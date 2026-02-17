@@ -5,7 +5,6 @@ import net.sf.l2j.event.ctf.CTFConfig;
 import net.sf.l2j.event.ctf.CTFEvent;
 import net.sf.l2j.event.fortress.FOSConfig;
 import net.sf.l2j.event.fortress.FOSEvent;
-import net.sf.l2j.event.tournament.ArenaConfig;
 import net.sf.l2j.event.tvt.TvTAreasLoader;
 import net.sf.l2j.event.tvt.TvTEvent;
 import net.sf.l2j.events.eventpvp.PvPEvent;
@@ -376,33 +375,18 @@ public class CharInfo extends L2GameServerPacket
 		else
 			writeC(_activeChar.isMounted() ? 0 : _activeChar.getEnchantEffect());
 		
-		if (_activeChar.getTeam() == 1)
-			writeC(0x01); // team circle around feet 1= Blue, 2 = red
-		else if (Config.ENABLE_AURA_AUTOFARM && _activeChar.isAutoFarm())
-			writeC(0x01);
-		else if (ArenaConfig.ENABLE_AURA_TOURNAMENT && _activeChar.isTeamTour1())
-		{
-			writeC(ArenaConfig.AURA_COLOR_TEAM1);
-		}
-		else if (ArenaConfig.ENABLE_AURA_TOURNAMENT && _activeChar.isTeamTour2())
-		{
-			writeC(ArenaConfig.AURA_COLOR_TEAM2);
-		}
-		else if (_activeChar.getTeam() == 2)
-			writeC(0x02); // team circle around feet 1= Blue, 2 = red
+		final int st = _activeChar.getPartyEffectState();
+		if (_activeChar.canUsePartyEffectCircleOverride() && (st == 1 || st == 2))
+			writeC(st);
 		else
-			writeC(0x00); // team circle around feet 1= Blue, 2 = red
-			
+			writeC(0x00);
+		
 		writeD(_activeChar.getClanCrestLargeId());
 		writeC(_activeChar.isNoble() ? 1 : 0); // Symbol on char menu ctrl+I
-		// if (_activeChar.isHero() && (((TvT.is_started() || TvT.is_teleport()) && _activeChar._inEventTvT) || ((CTF.is_started() || CTF.is_teleport()) && _activeChar._inEventCTF)))
-		// {
-		// writeC(0x00);
-		// }
-		// else
-		// {
-		writeC((_activeChar.isHero() || (_activeChar.isGM() && Config.GM_HERO_AURA)) ? 1 : 0); // Hero Aura
-		// }
+		
+		final boolean heroAura = _activeChar.isHero() || (_activeChar.isGM() && Config.GM_HERO_AURA) || (_activeChar.canUsePartyEffectHeroOverride() && _activeChar.getPartyEffectState() == 3);
+		
+		writeC(heroAura ? 1 : 0);
 		
 		writeC(_activeChar.isFishing() ? 1 : 0); // 0x01: Fishing Mode (Cant be undone by setting back to 0)
 		

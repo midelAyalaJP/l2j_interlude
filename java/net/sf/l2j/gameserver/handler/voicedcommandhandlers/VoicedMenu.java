@@ -82,7 +82,7 @@ public class VoicedMenu implements IVoicedCommandHandler
 		"setViewer",
 		"hideEnchantGlow",
 		"disable_Helm",
-		"disable_skin"
+		"partyeffect"
 	};
 	
 	// private static final String ACTIVED = "ON";
@@ -93,6 +93,55 @@ public class VoicedMenu implements IVoicedCommandHandler
 	{
 		if (command.equals("menu") || command.equals("MENU"))
 			showMenuHtml(activeChar);
+		if (command.equalsIgnoreCase("partyeffect"))
+		{
+		    // cooldown 45s
+		    if (!activeChar.canTogglePartyEffect())
+		    {
+		        long sec = (activeChar.getPartyEffectToggleRemainingMs() + 999) / 1000;
+		        activeChar.sendMessage("Aguarde " + sec + "s para usar novamente.");
+		        return true;
+		    }
+
+		    activeChar.markPartyEffectToggled(45000);
+
+		    // alterna: 0->1->2->3->0
+		    final int newState = activeChar.togglePartyEffectState();
+
+		    if (activeChar.getParty() != null)
+		    {
+		        for (Player m : activeChar.getParty().getPartyMembers())
+		        {
+		            if (m == null)
+		                continue;
+
+		            m.setPartyEffectState(newState);
+		            m.broadcastUserInfo();
+		        }
+		    }
+		    else
+		    {
+		        activeChar.broadcastUserInfo();
+		    }
+
+		    switch (newState)
+		    {
+		        case 1:
+		            activeChar.sendMessage("PartyEffect: BLUE");
+		            break;
+		        case 2:
+		            activeChar.sendMessage("PartyEffect: RED");
+		            break;
+		        case 3:
+		            activeChar.sendMessage("PartyEffect: HERO AURA");
+		            break;
+		        default:
+		            activeChar.sendMessage("PartyEffect: OFF");
+		            break;
+		    }
+		    return true;
+		}
+
 		
 		else if (command.equals("info"))
 			showInfoHtml(activeChar);

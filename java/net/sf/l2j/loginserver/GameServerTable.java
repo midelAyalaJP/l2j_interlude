@@ -34,6 +34,19 @@ public class GameServerTable
 	
 	private KeyPair[] _keyPairs;
 	
+	public void reload()
+	{
+		_serverNames.clear();
+		_gameServerTable.clear();
+		loadServerNames();
+		_log.info("Loaded " + _serverNames.size() + " server names.");
+		
+		loadRegisteredGameServers();
+		_log.info("Loaded " + _gameServerTable.size() + " registered gameserver(s).");
+		
+		initRSAKeys();
+		_log.info("Cached " + _keyPairs.length + " RSA keys for gameserver communication.");
+	}
 	protected GameServerTable()
 	{
 		loadServerNames();

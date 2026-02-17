@@ -5119,7 +5119,6 @@ public class Player extends Playable
 			// Notify self and others about speed change
 			broadcastUserInfo();
 			sendPacket(new ValidateLocation(this));
-
 			
 			if (useFood)
 				startFeed(npcId);
@@ -5211,59 +5210,58 @@ public class Player extends Playable
 	
 	public boolean dismount()
 	{
-	    sendPacket(new SetupGauge(3, 0, 0));
-
-	    final int petId = _mountNpcId;
-
-	    if (!setMount(0, 0, 0))
-	        return false;
-
-	    stopFeed();
-
-	    broadcastPacket(new Ride(getObjectId(), Ride.ACTION_DISMOUNT, 0));
-
-	    _petTemplate = null;
-	    _petData = null;
-	    _mountObjectId = 0;
-
-	    storePetFood(petId);
-
-	    // ===== FIX: revalidar Z/posição após mudar colisão do char =====
-	    // 1) revalida zona (evita estados bugados de ground/no-landing/etc.)
-	    try
-	    {
-	        revalidateZone(true);
-	    }
-	    catch (Exception ignored)
-	    {
-	    }
-
-	    // 2) “snap to ground” via geodata
-	    try
-	    {
-	        // Ajusta o Z para o chão no ponto atual
-	        final int x = getX();
-	        final int y = getY();
-	        final int z = getZ();
-
-	        // Se seu core tem GeoEngine, use. Se for GeoData, adapte.
-	        final int geoZ = GeoEngine.getInstance().getHeight(x, y, z);
-
-	        // Evita teleporte se a diferença for absurda (segurança)
-	        if (Math.abs(geoZ - z) <= 300)
-	            setXYZ(x, y, geoZ);
-	    }
-	    catch (Exception ignored)
-	    {
-	    }
-
-	    // 3) Atualiza para si e para os outros
-	    broadcastUserInfo();
-	    sendPacket(new ValidateLocation(this));
-
-	    return true;
+		sendPacket(new SetupGauge(3, 0, 0));
+		
+		final int petId = _mountNpcId;
+		
+		if (!setMount(0, 0, 0))
+			return false;
+		
+		stopFeed();
+		
+		broadcastPacket(new Ride(getObjectId(), Ride.ACTION_DISMOUNT, 0));
+		
+		_petTemplate = null;
+		_petData = null;
+		_mountObjectId = 0;
+		
+		storePetFood(petId);
+		
+		// ===== FIX: revalidar Z/posição após mudar colisão do char =====
+		// 1) revalida zona (evita estados bugados de ground/no-landing/etc.)
+		try
+		{
+			revalidateZone(true);
+		}
+		catch (Exception ignored)
+		{
+		}
+		
+		// 2) “snap to ground” via geodata
+		try
+		{
+			// Ajusta o Z para o chão no ponto atual
+			final int x = getX();
+			final int y = getY();
+			final int z = getZ();
+			
+			// Se seu core tem GeoEngine, use. Se for GeoData, adapte.
+			final int geoZ = GeoEngine.getInstance().getHeight(x, y, z);
+			
+			// Evita teleporte se a diferença for absurda (segurança)
+			if (Math.abs(geoZ - z) <= 300)
+				setXYZ(x, y, geoZ);
+		}
+		catch (Exception ignored)
+		{
+		}
+		
+		// 3) Atualiza para si e para os outros
+		broadcastUserInfo();
+		sendPacket(new ValidateLocation(this));
+		
+		return true;
 	}
-
 	
 	public void storePetFood(int petId)
 	{
@@ -14088,7 +14086,6 @@ public class Player extends Playable
 		if (skin == null)
 			return;
 		
-	 
 		switch (skin.getType())
 		{
 			case ARMOR:
@@ -14281,73 +14278,149 @@ public class Player extends Playable
 	
 	// anti-spam de compra (ms)
 	private long _nextMerchantBuyMs = 0;
-
+	
 	public boolean canMerchantBuyNow()
 	{
-	    return System.currentTimeMillis() >= _nextMerchantBuyMs;
+		return System.currentTimeMillis() >= _nextMerchantBuyMs;
 	}
-
+	
 	public void setNextMerchantBuyDelay(long delayMs)
 	{
-	    _nextMerchantBuyMs = System.currentTimeMillis() + Math.max(0, delayMs);
+		_nextMerchantBuyMs = System.currentTimeMillis() + Math.max(0, delayMs);
 	}
-
 	
-
 	// pendência de confirmação
 	private long _merchantBuyExpireMs;
 	private String _merchantBuyCategory;
 	private String _merchantBuyGrade;
 	private int _merchantBuyPage;
 	private int _merchantBuyIndex;
-
+	
 	public boolean merchantBuyRateLimit(long delayMs)
 	{
-	    final long now = System.currentTimeMillis();
-	    if (now < _nextMerchantBuyMs)
-	        return false;
-
-	    _nextMerchantBuyMs = now + delayMs;
-	    return true;
+		final long now = System.currentTimeMillis();
+		if (now < _nextMerchantBuyMs)
+			return false;
+		
+		_nextMerchantBuyMs = now + delayMs;
+		return true;
 	}
-
+	
 	public void setPendingMerchantBuy(String category, String grade, int page, int index, long ttlMs)
 	{
-	    _merchantBuyCategory = category;
-	    _merchantBuyGrade = grade;
-	    _merchantBuyPage = page;
-	    _merchantBuyIndex = index;
-	    _merchantBuyExpireMs = System.currentTimeMillis() + ttlMs;
+		_merchantBuyCategory = category;
+		_merchantBuyGrade = grade;
+		_merchantBuyPage = page;
+		_merchantBuyIndex = index;
+		_merchantBuyExpireMs = System.currentTimeMillis() + ttlMs;
 	}
-
+	
 	public boolean hasPendingMerchantBuy()
 	{
-	    return _merchantBuyCategory != null && System.currentTimeMillis() <= _merchantBuyExpireMs;
+		return _merchantBuyCategory != null && System.currentTimeMillis() <= _merchantBuyExpireMs;
 	}
-
+	
 	public void clearPendingMerchantBuy()
 	{
-	    _merchantBuyCategory = null;
-	    _merchantBuyGrade = null;
-	    _merchantBuyPage = 0;
-	    _merchantBuyIndex = 0;
-	    _merchantBuyExpireMs = 0;
+		_merchantBuyCategory = null;
+		_merchantBuyGrade = null;
+		_merchantBuyPage = 0;
+		_merchantBuyIndex = 0;
+		_merchantBuyExpireMs = 0;
 	}
-
+	
 	public boolean consumePendingMerchantBuy()
 	{
-	    if (!hasPendingMerchantBuy())
+		if (!hasPendingMerchantBuy())
+		{
+			clearPendingMerchantBuy();
+			return false;
+		}
+		return true;
+	}
+	
+	public String getPendingMerchantCategory()
+	{
+		return _merchantBuyCategory;
+	}
+	
+	public String getPendingMerchantGrade()
+	{
+		return _merchantBuyGrade;
+	}
+	
+	public int getPendingMerchantPage()
+	{
+		return _merchantBuyPage;
+	}
+	
+	public int getPendingMerchantIndex()
+	{
+		return _merchantBuyIndex;
+	}
+
+	private int _partyEffectState;
+	private long _partyEffectNextToggle;
+
+	public int getPartyEffectState()
+	{
+	    return _partyEffectState;
+	}
+
+	public void setPartyEffectState(int state)
+	{
+	    _partyEffectState = Math.max(0, Math.min(3, state));
+	}
+
+
+	public int togglePartyEffectState()
+	{
+	    int next;
+	    switch (_partyEffectState)
 	    {
-	        clearPendingMerchantBuy();
-	        return false;
+	        case 0: next = 1; break;
+	        case 1: next = 2; break;
+	        case 2: next = 3; break;
+	        default: next = 0; break; // 3 -> 0
 	    }
+	    setPartyEffectState(next);
+	    return next;
+	}
+
+
+	public boolean canTogglePartyEffect()
+	{
+	    return System.currentTimeMillis() >= _partyEffectNextToggle;
+	}
+
+	public long getPartyEffectToggleRemainingMs()
+	{
+	    return Math.max(0, _partyEffectNextToggle - System.currentTimeMillis());
+	}
+
+	public void markPartyEffectToggled(long cooldownMs)
+	{
+	    _partyEffectNextToggle = System.currentTimeMillis() + cooldownMs;
+	}
+
+	public boolean canUsePartyEffectCircleOverride()
+	{
+	    if (getTeam() == 1 || getTeam() == 2)
+	        return false;
+
+	    if (Config.ENABLE_AURA_AUTOFARM && isAutoFarm())
+	        return false;
+
+	    if (ArenaConfig.ENABLE_AURA_TOURNAMENT && (isTeamTour1() || isTeamTour2()))
+	        return false;
+
 	    return true;
 	}
 
-	public String getPendingMerchantCategory() { return _merchantBuyCategory; }
-	public String getPendingMerchantGrade() { return _merchantBuyGrade; }
-	public int getPendingMerchantPage() { return _merchantBuyPage; }
-	public int getPendingMerchantIndex() { return _merchantBuyIndex; }
+	public boolean canUsePartyEffectHeroOverride()
+	{
+	    return !(isHero() || (isGM() && Config.GM_HERO_AURA));
+	}
 
-
+	
 }

@@ -18,7 +18,7 @@ End If
 
 ' Generate command.
 Dim command
-command = path & "java -Xmx128m -cp ../libs/*; net.sf.l2j.loginserver.L2LoginServer"
+command = path & "java -Duser.timezone=Etc/GMT+3 -Xmx128m -cp ../libs/*; net.sf.l2j.loginserver.L2LoginServer"
 
 ' Run the server.
 Dim exitcode

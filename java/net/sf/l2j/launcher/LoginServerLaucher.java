@@ -31,6 +31,8 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import net.sf.l2j.Config;
+import net.sf.l2j.gsregistering.ui.GameServerRegisterUI;
 import net.sf.l2j.launcher.etc.InterfaceLimit;
 import net.sf.l2j.launcher.etc.SplashScreen;
 import net.sf.l2j.launcher.etc.Thema;
@@ -180,6 +182,33 @@ public class LoginServerLaucher
 			}
 		});
 		mnAdmin.add(mntmSearchItemss);	
+		
+		
+		final JMenu mnTools = new JMenu("Hexid");
+		mnTools.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+		menuBar.add(mnTools);
+		
+		final JMenuItem mntmGsReg = new JMenuItem("Register");
+		mntmGsReg.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+		mntmGsReg.addActionListener(e -> {
+			SwingUtilities.invokeLater(() -> {
+				try
+				{
+					// importante: carrega config específico
+					Config.loadGameServerRegistration();
+					
+					GameServerRegisterUI ui = new GameServerRegisterUI();
+					ui.setVisible(true);
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Falha ao abrir GameServer Register: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+				}
+			});
+		});
+		mnTools.add(mntmGsReg);
+		
 		// Set icons.
 		final List<Image> icons = new ArrayList<>();
 		icons.add(new ImageIcon(".." + File.separator + "images" + File.separator + "l2jdev_16x16.png").getImage());
@@ -189,7 +218,7 @@ public class LoginServerLaucher
 		scrollPanel.setBounds(0, 0, 800, 550);
 		
 		// Set frame.
-		final JFrame frame = new JFrame("Login Server");
+		final JFrame frame = new JFrame("Auth");
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		final JMenuItem miConfig = new JMenuItem("Config");
 		miConfig.setFont(new Font("Segoe UI", Font.PLAIN, 12));

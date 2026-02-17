@@ -6,9 +6,6 @@ import net.sf.l2j.Config;
 import net.sf.l2j.commons.mmocore.SendablePacket;
 import net.sf.l2j.gameserver.network.L2GameClient;
 
-/**
- * @author KenM
- */
 public abstract class L2GameServerPacket extends SendablePacket<L2GameClient>
 {
 	protected static final Logger _log = Logger.getLogger(L2GameServerPacket.class.getName());

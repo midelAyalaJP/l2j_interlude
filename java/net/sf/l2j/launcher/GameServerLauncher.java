@@ -40,6 +40,7 @@ import net.sf.l2j.gameserver.balance.matchup.MatchupHolder;
 import net.sf.l2j.gameserver.balance.matchup.MatchupReader;
 import net.sf.l2j.gameserver.balance.skills.SkillBalanceHolder;
 import net.sf.l2j.gameserver.balance.skills.SkillBalanceReader;
+import net.sf.l2j.geodataconverter.ui.GeoDataConverterUI;
 import net.sf.l2j.launcher.etc.InterfaceInfo;
 import net.sf.l2j.launcher.etc.InterfaceLimit;
 import net.sf.l2j.launcher.etc.SplashScreen;
@@ -260,6 +261,30 @@ public class GameServerLauncher
 		});
 		mnReload.add(mntmProfileVsProfile);
 		
+		final JMenu mnGeo = new JMenu("GeoConvert");
+		mnGeo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+		menuBar.add(mnGeo);
+		
+		final JMenuItem mntmGeo = new JMenuItem("Open Panel");
+		mntmGeo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+		mntmGeo.addActionListener(e -> {
+			SwingUtilities.invokeLater(() -> {
+				try
+				{
+					
+					GeoDataConverterUI ui = new GeoDataConverterUI();
+					ui.setVisible(true);
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Falha ao abrir GeoConvert: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+				}
+			});
+		});
+		
+		mnGeo.add(mntmGeo);
+		
 		final List<Image> icons = new ArrayList<>();
 		icons.add(new ImageIcon(".." + File.separator + "images" + File.separator + "l2jdev_16x16.png").getImage());
 		icons.add(new ImageIcon(".." + File.separator + "images" + File.separator + "l2jdev_32x32.png").getImage());
@@ -271,7 +296,7 @@ public class GameServerLauncher
 		layeredPanel.add(scrollPanel, 0, 0);
 		layeredPanel.add(systemPanel, 1, 0);
 		
-		final JFrame frame = new JFrame("Game Server");
+		final JFrame frame = new JFrame("World");
 		
 		final JMenuItem miConfig = new JMenuItem("Config");
 		miConfig.setFont(new Font("Segoe UI", Font.PLAIN, 12));
