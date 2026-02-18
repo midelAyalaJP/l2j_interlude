@@ -95,7 +95,21 @@ public class VoicedMenu implements IVoicedCommandHandler
 			showMenuHtml(activeChar);
 		if (command.equalsIgnoreCase("partyeffect"))
 		{
-		    // cooldown 45s
+		    // precisa estar em party
+		    if (activeChar.getParty() == null)
+		    {
+		        activeChar.sendMessage("PartyEffect: você precisa estar em party.");
+		        return true;
+		    }
+
+		    // somente o líder pode definir
+		    if (!activeChar.getParty().isLeader(activeChar))
+		    {
+		        activeChar.sendMessage("PartyEffect: somente o líder do grupo pode usar este comando.");
+		        return true;
+		    }
+
+		    // cooldown (ex.: 45s) - mantém a regra no líder (quem usa o comando)
 		    if (!activeChar.canTogglePartyEffect())
 		    {
 		        long sec = (activeChar.getPartyEffectToggleRemainingMs() + 999) / 1000;
@@ -103,27 +117,23 @@ public class VoicedMenu implements IVoicedCommandHandler
 		        return true;
 		    }
 
+		    // marca cooldown 45s
 		    activeChar.markPartyEffectToggled(45000);
 
 		    // alterna: 0->1->2->3->0
 		    final int newState = activeChar.togglePartyEffectState();
 
-		    if (activeChar.getParty() != null)
+		    // aplica para todos os membros
+		    for (Player m : activeChar.getParty().getPartyMembers())
 		    {
-		        for (Player m : activeChar.getParty().getPartyMembers())
-		        {
-		            if (m == null)
-		                continue;
+		        if (m == null)
+		            continue;
 
-		            m.setPartyEffectState(newState);
-		            m.broadcastUserInfo();
-		        }
-		    }
-		    else
-		    {
-		        activeChar.broadcastUserInfo();
+		        m.setPartyEffectState(newState);
+		        m.broadcastUserInfo();
 		    }
 
+		    // feedback pro líder
 		    switch (newState)
 		    {
 		        case 1:
@@ -132,14 +142,10 @@ public class VoicedMenu implements IVoicedCommandHandler
 		        case 2:
 		            activeChar.sendMessage("PartyEffect: RED");
 		            break;
-		        case 3:
-		            activeChar.sendMessage("PartyEffect: HERO AURA");
-		            break;
 		        default:
 		            activeChar.sendMessage("PartyEffect: OFF");
 		            break;
 		    }
-		    return true;
 		}
 
 		

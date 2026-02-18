@@ -13,7 +13,7 @@ public class KTBManager
 {
 	protected static final Logger _log = Logger.getLogger(KTBManager.class.getName());
 	
-	private static final SimpleDateFormat FORMAT_FULL = new SimpleDateFormat("EEE dd/MM HH:mm:ss z yyyy");
+	private static final SimpleDateFormat FORMAT_FULL = new SimpleDateFormat("HH:mm");
 	
 	private ScheduledFuture<?> _future; // future atual do task
 	private KTBStartTask _task; // task reutilizado

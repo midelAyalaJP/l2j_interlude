@@ -14369,7 +14369,7 @@ public class Player extends Playable
 
 	public void setPartyEffectState(int state)
 	{
-	    _partyEffectState = Math.max(0, Math.min(3, state));
+	    _partyEffectState = Math.max(0, Math.min(2, state));
 	}
 
 
@@ -14380,8 +14380,7 @@ public class Player extends Playable
 	    {
 	        case 0: next = 1; break;
 	        case 1: next = 2; break;
-	        case 2: next = 3; break;
-	        default: next = 0; break; // 3 -> 0
+	        default: next = 0; break; // 2 -> 0
 	    }
 	    setPartyEffectState(next);
 	    return next;
