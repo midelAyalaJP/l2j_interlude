@@ -24,8 +24,6 @@ import net.sf.l2j.community.marketplace.AuctionTableCommunity;
 import net.sf.l2j.dailyreward.DailyRewardManager;
 import net.sf.l2j.dolls.DollsTable;
 import net.sf.l2j.dropdiary.DropDiaryManager;
-import net.sf.l2j.dungeon.DungeonConfig;
-import net.sf.l2j.dungeon.DungeonManager;
 import net.sf.l2j.email.items.MailManager;
 import net.sf.l2j.event.bossevent.IPManager;
 import net.sf.l2j.event.bossevent.KTBConfig;
@@ -523,10 +521,6 @@ public class GameServer
 		{
 			_log.info("Solo Boss Event is disabled.");
 		}
-		
-		StringUtil.printSection("Dungeon Manager Test");
-		DungeonManager.getInstance();
-		DungeonConfig.init();
 		
 		StringUtil.printSection("Daily Reward System");
 		if (Config.ENABLE_REWARD_DAILY)

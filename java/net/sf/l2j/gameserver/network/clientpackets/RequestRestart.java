@@ -34,13 +34,6 @@ public final class RequestRestart extends L2GameClientPacket
 		final Player player = getClient().getActiveChar();
 		if (player == null)
 			return;
-		
-		if (player.getDungeon() != null)
-		{
-			player.sendMessage("You cannot restart while in a dungeon.");
-			sendPacket(RestartResponse.valueOf(false));
-			return;
-		}
 
 		if (player.getActiveEnchantItem() != null || player.isLocked() || player.isInStoreMode())
 		{

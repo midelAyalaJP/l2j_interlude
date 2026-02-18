@@ -78,9 +78,6 @@ public class SummonFriend implements ISkillHandler
 			// Check target status.
 			if (!Player.checkSummonTargetStatus(target, player))
 				continue;
-
-			if (target.getDungeon() != null)
-				continue;
 			
 			// Check target distance.
 			if (Util.checkIfInRange(50, activeChar, target, false))

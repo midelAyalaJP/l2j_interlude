@@ -31,7 +31,6 @@ import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.dailyreward.DailyRewardManager;
 import net.sf.l2j.dailyreward.PlayerVar;
 import net.sf.l2j.dailyreward.PlayerVariables;
-import net.sf.l2j.dungeon.Dungeon;
 import net.sf.l2j.event.bossevent.KTBConfig;
 import net.sf.l2j.event.bossevent.KTBEvent;
 import net.sf.l2j.event.ctf.CTFConfig;
@@ -4037,11 +4036,6 @@ public class Player extends Playable
 		// Kill the L2PcInstance
 		if (!super.doDie(killer))
 			return false;
-		
-		if (getDungeon() != null)
-		{
-			getDungeon().onPlayerDeath(this);
-		}
 		
 		if (isMounted())
 			stopFeed();
@@ -13944,19 +13938,6 @@ public class Player extends Playable
 	public double getDropBonus()
 	{
 		return this.dropBonus;
-	}
-	
-	// Dungeon
-	private Dungeon _dungeon = null;
-	
-	public void setDungeon(Dungeon val)
-	{
-		_dungeon = val;
-	}
-	
-	public Dungeon getDungeon()
-	{
-		return _dungeon;
 	}
 	
 	private long _lastLimboFixTime;

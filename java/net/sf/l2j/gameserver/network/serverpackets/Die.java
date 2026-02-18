@@ -52,17 +52,6 @@ public class Die extends L2GameServerPacket
 		
 		writeC(0x06);
 		writeD(_charObjId);
-		
-		if (_activeChar instanceof Player && ((Player) _activeChar).getDungeon() != null)
-		{
-			writeD(0x00);
-			writeD(0x00);
-			writeD(0x00);
-			writeD(0x00);
-			writeD(0x00);
-			writeD(0x00);
-			return;
-		}
 
 		writeD(_canEvent ? 0x01 : 0); // 6d 00 00 00 00 - to nearest village
 		

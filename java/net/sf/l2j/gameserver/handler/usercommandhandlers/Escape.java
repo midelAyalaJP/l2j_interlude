@@ -67,12 +67,6 @@ public class Escape implements IUserCommandHandler
 			activeChar.sendMessage("You cannot use this skill in Tournament Event/Zone.");
 			return false;
 		}
-		
-		if (activeChar.getDungeon() != null)
-		{
-			activeChar.sendMessage("Your current state doesn't allow you to use the /unstuck command.");
-			return false;
-		}
 
 		activeChar.stopMove(null);
 		

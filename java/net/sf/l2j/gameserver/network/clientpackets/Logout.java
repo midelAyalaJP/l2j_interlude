@@ -89,13 +89,6 @@ public final class Logout extends L2GameClientPacket
 			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
-		
-		if (player.getDungeon() != null)
-		{
-			player.sendMessage("You cannot logout while in a dungeon.");
-			player.sendPacket(ActionFailed.STATIC_PACKET);
-			return;
-		}
 
 		if (player.isFestivalParticipant())
 		{
