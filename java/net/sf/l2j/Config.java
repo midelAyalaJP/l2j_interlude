@@ -30,38 +30,54 @@ public final class Config
 {
 	private static final Logger _log = Logger.getLogger(Config.class.getName());
 	
-	public static final String CLANS_FILE = "./config/clans.properties";
-	public static final String EVENTS_FILE = "./config/events.properties";
-	public static final String GEOENGINE_FILE = "./config/geoengine.properties";
-	public static final String HEXID_FILE = "./config/hexid.txt";
-	public static final String LOGIN_CONFIGURATION_FILE = "./config/loginserver.properties";
-	public static final String NPCS_FILE = "./config/npcs.properties";
-	public static final String PLAYERS_FILE = "./config/players.properties";
-	public static final String SERVER_FILE = "./config/server.properties";
-	public static final String SIEGE_FILE = "./config/siege.properties";
-	public static final String SIEGE_OTHERS_FILE = "./config/siege.properties";
-	
-	// Custom properties
-	public static final String DEATH_BUFFS_FILE = "./config/DeathBuffLocation.properties";
-	public static final String DIVERSOS_FILE = "./config/Diversos.properties";
-	public static final String NEWCHARACTER = "./config/Personagem.properties";
-	public static final String PET_MANAGER = "./config/PetManager.properties";
-	public static final String CUSTOM_FILE = "./config/Custom.properties";
-	public static final String PROTECION_FILE = "./config/Protect.properties";
-	public static final String DONATE_SHOP = "./config/Donate.properties";
-	public static final String BOSS_FILE = "./config/Boss.properties";
-	public static final String COMMAND_FILE = "./config/Comandos.properties";
-	public static final String PHYSICS_FILE = "./config/physics.properties";
-	public static final String SAY_FILTER_FILE = "./config/SayFilter.txt";
-	public static final String OFFLINE_BUFF_SHOP_FILE = "./config/SellBuffs.properties";
-	
-	public static final String PARTYFARM_EVENT = "./config/events/PartyFarm.properties";
-	public static final String REWARD_SOLO_EVENT = "./config/events/RewardSoloEvent.properties";
-	public static final String SPOIL_FILE = "./config/events/EventSpoil.properties";
-	public static final String PVP_EVENT_FILE = "./config/events/PvPEvent.properties";
-	public static final String MISSION_FILE = "./config/events/Mission.properties";
-	public static final String SOLOBOSS_FILE = "./config/events/SoloBossEvent.properties";
-	public static final String CHAMPION_EVENT = "./config/events/ChampionInvade.properties";
+	// ==========================
+	// CONFIG ROOT
+	// ==========================
+	public static final String CONFIG_ROOT = "./config/";
+
+	// ==========================
+	// MAIN (core)
+	// ==========================
+	public static final String CLANS_FILE                  = CONFIG_ROOT + "main/clans.properties";
+	public static final String EVENTS_FILE                 = CONFIG_ROOT + "main/events.properties";
+	public static final String GEOENGINE_FILE              = CONFIG_ROOT + "main/geoengine.properties";
+	public static final String LOGIN_CONFIGURATION_FILE    = CONFIG_ROOT + "main/loginserver.properties";
+	public static final String NPCS_FILE                   = CONFIG_ROOT + "main/npcs.properties";
+	public static final String PLAYERS_FILE                = CONFIG_ROOT + "main/players.properties";
+	public static final String SERVER_FILE                 = CONFIG_ROOT + "main/server.properties";
+	public static final String SIEGE_FILE                  = CONFIG_ROOT + "main/siege.properties";
+
+	// ==========================
+	// OTHER (txt/misc)
+	// ==========================
+	public static final String HEXID_FILE                  = CONFIG_ROOT + "other/hexid.txt";
+	public static final String SAY_FILTER_FILE             = CONFIG_ROOT + "other/SayFilter.txt";
+
+	// ==========================
+	// L2JDEV (custom/mods)
+	// ==========================
+	public static final String DEATH_BUFFS_FILE            = CONFIG_ROOT + "l2jdev/DeathBuffLocation.properties";
+	public static final String DIVERSOS_FILE               = CONFIG_ROOT + "l2jdev/Diversos.properties";
+	public static final String NEWCHARACTER                = CONFIG_ROOT + "l2jdev/Personagem.properties";
+	public static final String PET_MANAGER                 = CONFIG_ROOT + "l2jdev/PetManager.properties";
+	public static final String CUSTOM_FILE                 = CONFIG_ROOT + "l2jdev/Custom.properties";
+	public static final String PROTECION_FILE              = CONFIG_ROOT + "l2jdev/Protect.properties";
+	public static final String DONATE_SHOP                 = CONFIG_ROOT + "l2jdev/Donate.properties";
+	public static final String BOSS_FILE                   = CONFIG_ROOT + "l2jdev/Boss.properties";
+	public static final String COMMAND_FILE                = CONFIG_ROOT + "l2jdev/Comandos.properties";
+	public static final String PHYSICS_FILE                = CONFIG_ROOT + "l2jdev/physics.properties";
+	public static final String OFFLINE_BUFF_SHOP_FILE      = CONFIG_ROOT + "l2jdev/SellBuffs.properties";
+
+	// ==========================
+	// EVENT (events)
+	// ==========================
+	public static final String PARTYFARM_EVENT             = CONFIG_ROOT + "event/PartyFarm.properties";
+	public static final String REWARD_SOLO_EVENT           = CONFIG_ROOT + "event/RewardSoloEvent.properties";
+	public static final String SPOIL_FILE                  = CONFIG_ROOT + "event/EventSpoil.properties";
+	public static final String PVP_EVENT_FILE              = CONFIG_ROOT + "event/PvPEvent.properties";
+	public static final String MISSION_FILE                = CONFIG_ROOT + "event/Mission.properties";
+	public static final String SOLOBOSS_FILE               = CONFIG_ROOT + "event/SoloBossEvent.properties";
+	public static final String CHAMPION_EVENT              = CONFIG_ROOT + "event/ChampionInvade.properties";
 	
 	// --------------------------------------------------
 	// Clans settings
@@ -4245,7 +4261,7 @@ public final class Config
 	
 	private static final void SiegeManager()
 	{
-		final ExProperties sieges = Config.initProperties(Config.SIEGE_OTHERS_FILE);
+		final ExProperties sieges = Config.initProperties(SIEGE_FILE);
 		DISABLED_CHAT_NPCS_SIEGE = Boolean.parseBoolean(sieges.getProperty("ChatNpcSiegeDisabled", "true"));
 		ENABLE_SIEGE_MANAGER = sieges.getProperty("EnableSiegeManager", false);
 		DAY_TO_SIEGE = Integer.parseInt(sieges.getProperty("DayToSiege", "2"));
