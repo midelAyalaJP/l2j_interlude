@@ -27,7 +27,6 @@
 		<property name="build.dist.server.game" location="${build.dist.server}/game" />
 		<property name="build.dist.server.auth" location="${build.dist.server}/auth" />
 		<property name="build.dist.server.libs" location="${build.dist.server}/libs" />
-		<property name="build.dist.server.plungs" location="${build.dist.server}/plungs" />
 	</target>
 
 	<target name="init" description="Create the output directories. Do nothing if dirs were already created">
@@ -40,7 +39,6 @@
 		<mkdir dir="${build.dist.server.libs}" />
 		<mkdir dir="${build.dist.server.auth}" />
 		<mkdir dir="${build.dist.server.game}" />
-		<mkdir dir="${build.dist.server.plungs}" />
 	</target>
 
 	<target name="export" description="Syncronizes build space contents with project.">
@@ -66,11 +64,6 @@
 		</copy>
 		<copy todir="${build.dist.server.game}">
 			<fileset dir="${basedir}/game">
-				<include name="**/*.*" />
-			</fileset>
-		</copy>
-		<copy todir="${build.dist.server.plungs}">
-			<fileset dir="${basedir}/plungs">
 				<include name="**/*.*" />
 			</fileset>
 		</copy>
