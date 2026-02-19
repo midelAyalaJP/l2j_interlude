@@ -31,6 +31,7 @@ import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.dailyreward.DailyRewardManager;
 import net.sf.l2j.dailyreward.PlayerVar;
 import net.sf.l2j.dailyreward.PlayerVariables;
+import net.sf.l2j.dungeon.Dungeon;
 import net.sf.l2j.event.bossevent.KTBConfig;
 import net.sf.l2j.event.bossevent.KTBEvent;
 import net.sf.l2j.event.ctf.CTFConfig;
@@ -14339,68 +14340,83 @@ public class Player extends Playable
 	{
 		return _merchantBuyIndex;
 	}
-
+	
 	private int _partyEffectState;
 	private long _partyEffectNextToggle;
-
+	
 	public int getPartyEffectState()
 	{
-	    return _partyEffectState;
+		return _partyEffectState;
 	}
-
+	
 	public void setPartyEffectState(int state)
 	{
-	    _partyEffectState = Math.max(0, Math.min(2, state));
+		_partyEffectState = Math.max(0, Math.min(2, state));
 	}
-
-
+	
 	public int togglePartyEffectState()
 	{
-	    int next;
-	    switch (_partyEffectState)
-	    {
-	        case 0: next = 1; break;
-	        case 1: next = 2; break;
-	        default: next = 0; break; // 2 -> 0
-	    }
-	    setPartyEffectState(next);
-	    return next;
+		int next;
+		switch (_partyEffectState)
+		{
+			case 0:
+				next = 1;
+				break;
+			case 1:
+				next = 2;
+				break;
+			default:
+				next = 0;
+				break; // 2 -> 0
+		}
+		setPartyEffectState(next);
+		return next;
 	}
-
-
+	
 	public boolean canTogglePartyEffect()
 	{
-	    return System.currentTimeMillis() >= _partyEffectNextToggle;
+		return System.currentTimeMillis() >= _partyEffectNextToggle;
 	}
-
+	
 	public long getPartyEffectToggleRemainingMs()
 	{
-	    return Math.max(0, _partyEffectNextToggle - System.currentTimeMillis());
+		return Math.max(0, _partyEffectNextToggle - System.currentTimeMillis());
 	}
-
+	
 	public void markPartyEffectToggled(long cooldownMs)
 	{
-	    _partyEffectNextToggle = System.currentTimeMillis() + cooldownMs;
+		_partyEffectNextToggle = System.currentTimeMillis() + cooldownMs;
 	}
-
+	
 	public boolean canUsePartyEffectCircleOverride()
 	{
-	    if (getTeam() == 1 || getTeam() == 2)
-	        return false;
-
-	    if (Config.ENABLE_AURA_AUTOFARM && isAutoFarm())
-	        return false;
-
-	    if (ArenaConfig.ENABLE_AURA_TOURNAMENT && (isTeamTour1() || isTeamTour2()))
-	        return false;
-
-	    return true;
+		if (getTeam() == 1 || getTeam() == 2)
+			return false;
+		
+		if (Config.ENABLE_AURA_AUTOFARM && isAutoFarm())
+			return false;
+		
+		if (ArenaConfig.ENABLE_AURA_TOURNAMENT && (isTeamTour1() || isTeamTour2()))
+			return false;
+		
+		return true;
 	}
-
+	
 	public boolean canUsePartyEffectHeroOverride()
 	{
-	    return !(isHero() || (isGM() && Config.GM_HERO_AURA));
+		return !(isHero() || (isGM() && Config.GM_HERO_AURA));
 	}
-
+	
+	private Dungeon _dungeon;
+	
+	public Dungeon getDungeon()
+	{
+		return _dungeon;
+	}
+	
+	public void setDungeon(Dungeon dungeon)
+	{
+		_dungeon = dungeon;
+	}
 	
 }

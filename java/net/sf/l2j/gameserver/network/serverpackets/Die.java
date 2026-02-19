@@ -52,7 +52,21 @@ public class Die extends L2GameServerPacket
 		
 		writeC(0x06);
 		writeD(_charObjId);
-
+		
+		if (_activeChar instanceof Player)
+		{
+			Player player = (Player) _activeChar;
+			if(player.getDungeon() != null)
+			{
+				writeD(0x00);
+				writeD(0x00); // to hide away
+				writeD(0x00); // to castle
+				writeD(0x00); // to siege HQ
+				writeD(0x00); // sweepable (blue glow)
+				writeD(0x00); // FIXED
+				return;
+			}
+		}
 		writeD(_canEvent ? 0x01 : 0); // 6d 00 00 00 00 - to nearest village
 		
 		if (_canEvent && _clan != null)
@@ -84,6 +98,6 @@ public class Die extends L2GameServerPacket
 		if (Config.CUSTOM_TELEGIRAN_ON_DIE)
 			writeD(_canEvent ? 0x01 : 0x00); // FIXED
 		else
-		writeD(_allowFixedRes ? 0x01 : 0x00); // FIXED
+			writeD(_allowFixedRes ? 0x01 : 0x00); // FIXED
 	}
 }

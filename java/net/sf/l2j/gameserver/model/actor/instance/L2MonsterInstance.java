@@ -3,6 +3,7 @@ package net.sf.l2j.gameserver.model.actor.instance;
 import java.util.concurrent.ScheduledFuture;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.dungeon.Dungeon;
 import net.sf.l2j.gameserver.model.MinionList;
 import net.sf.l2j.gameserver.model.actor.Attackable;
 import net.sf.l2j.gameserver.model.actor.Creature;
@@ -125,6 +126,9 @@ public class L2MonsterInstance extends Attackable
 		{
 			final Player player = killer.getActingPlayer();
 			{
+				if (_dungeon != null)
+					_dungeon.onMobKill(this);
+				
 				if (Config.MISSION_LIST_MONSTER.contains(Integer.valueOf(getTemplate().getNpcId())) && Config.ACTIVE_MISSION)
 					if (player.getParty() == null)
 					{
@@ -198,6 +202,18 @@ public class L2MonsterInstance extends Attackable
 			_minionList = new MinionList(this);
 		
 		return _minionList;
+	}
+	
+	private Dungeon _dungeon;
+	
+	public void setDungeon(Dungeon dungeon)
+	{
+		_dungeon = dungeon;
+	}
+	
+	public Dungeon getDungeon()
+	{
+		return _dungeon;
 	}
 	
 	protected ScheduledFuture<?> _maintenanceTask;

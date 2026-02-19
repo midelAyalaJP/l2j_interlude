@@ -214,6 +214,11 @@ public interface IXmlReader
 		return parseInteger(node, null);
 	}
 	
+	default Integer parseInteger(Node node, String name, Integer defaultValue)
+	{
+		return parseInteger(node.getAttributes(), name, defaultValue);
+	}
+	
 	default Integer parseInteger(NamedNodeMap attrs, String name)
 	{
 		return parseInteger(attrs.getNamedItem(name));

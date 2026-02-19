@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.dungeon.data.DungeonData;
 import net.sf.l2j.event.bossevent.KTBConfig;
 import net.sf.l2j.event.bossevent.KTBEvent;
 import net.sf.l2j.event.bossevent.KTBManager;
@@ -82,7 +83,8 @@ public class VoicedMenu implements IVoicedCommandHandler
 		"setViewer",
 		"hideEnchantGlow",
 		"disable_Helm",
-		"partyeffect"
+		"partyeffect",
+		"dungeon"
 	};
 	
 	// private static final String ACTIVED = "ON";
@@ -93,61 +95,75 @@ public class VoicedMenu implements IVoicedCommandHandler
 	{
 		if (command.equals("menu") || command.equals("MENU"))
 			showMenuHtml(activeChar);
+		if (command.equalsIgnoreCase("dungeon"))
+	    {
+	        final int PAGE_SIZE = 5;
+	        final int page = 1;
+
+	        final NpcHtmlMessage html = new NpcHtmlMessage(0);
+	        html.setFile("data/html/mods/dungeon/index.htm");
+	        html.replace("%BACK%", "bypass dungeon chat index 1");
+	        html.replace("%DUNGEON_LIST%", DungeonData.getInstance().buildDungeonListHtml(page, PAGE_SIZE));
+	        html.replace("%DUNGEON_PAGES%", DungeonData.getInstance().buildDungeonPagesHtml(page, PAGE_SIZE));
+	        html.replace("%PAGE%", String.valueOf(page));
+	        activeChar.sendPacket(html);
+	        return true;
+	    }
+		
 		if (command.equalsIgnoreCase("partyeffect"))
 		{
-		    // precisa estar em party
-		    if (activeChar.getParty() == null)
-		    {
-		        activeChar.sendMessage("PartyEffect: você precisa estar em party.");
-		        return true;
-		    }
-
-		    // somente o líder pode definir
-		    if (!activeChar.getParty().isLeader(activeChar))
-		    {
-		        activeChar.sendMessage("PartyEffect: somente o líder do grupo pode usar este comando.");
-		        return true;
-		    }
-
-		    // cooldown (ex.: 45s) - mantém a regra no líder (quem usa o comando)
-		    if (!activeChar.canTogglePartyEffect())
-		    {
-		        long sec = (activeChar.getPartyEffectToggleRemainingMs() + 999) / 1000;
-		        activeChar.sendMessage("Aguarde " + sec + "s para usar novamente.");
-		        return true;
-		    }
-
-		    // marca cooldown 45s
-		    activeChar.markPartyEffectToggled(45000);
-
-		    // alterna: 0->1->2->3->0
-		    final int newState = activeChar.togglePartyEffectState();
-
-		    // aplica para todos os membros
-		    for (Player m : activeChar.getParty().getPartyMembers())
-		    {
-		        if (m == null)
-		            continue;
-
-		        m.setPartyEffectState(newState);
-		        m.broadcastUserInfo();
-		    }
-
-		    // feedback pro líder
-		    switch (newState)
-		    {
-		        case 1:
-		            activeChar.sendMessage("PartyEffect: BLUE");
-		            break;
-		        case 2:
-		            activeChar.sendMessage("PartyEffect: RED");
-		            break;
-		        default:
-		            activeChar.sendMessage("PartyEffect: OFF");
-		            break;
-		    }
+			// precisa estar em party
+			if (activeChar.getParty() == null)
+			{
+				activeChar.sendMessage("PartyEffect: você precisa estar em party.");
+				return true;
+			}
+			
+			// somente o líder pode definir
+			if (!activeChar.getParty().isLeader(activeChar))
+			{
+				activeChar.sendMessage("PartyEffect: somente o líder do grupo pode usar este comando.");
+				return true;
+			}
+			
+			// cooldown (ex.: 45s) - mantém a regra no líder (quem usa o comando)
+			if (!activeChar.canTogglePartyEffect())
+			{
+				long sec = (activeChar.getPartyEffectToggleRemainingMs() + 999) / 1000;
+				activeChar.sendMessage("Aguarde " + sec + "s para usar novamente.");
+				return true;
+			}
+			
+			// marca cooldown 45s
+			activeChar.markPartyEffectToggled(45000);
+			
+			// alterna: 0->1->2->3->0
+			final int newState = activeChar.togglePartyEffectState();
+			
+			// aplica para todos os membros
+			for (Player m : activeChar.getParty().getPartyMembers())
+			{
+				if (m == null)
+					continue;
+				
+				m.setPartyEffectState(newState);
+				m.broadcastUserInfo();
+			}
+			
+			// feedback pro líder
+			switch (newState)
+			{
+				case 1:
+					activeChar.sendMessage("PartyEffect: BLUE");
+					break;
+				case 2:
+					activeChar.sendMessage("PartyEffect: RED");
+					break;
+				default:
+					activeChar.sendMessage("PartyEffect: OFF");
+					break;
+			}
 		}
-
 		
 		else if (command.equals("info"))
 			showInfoHtml(activeChar);

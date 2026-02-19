@@ -5,6 +5,7 @@ import java.util.StringTokenizer;
 import net.sf.l2j.Config;
 import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.dailyreward.DailyRewardData;
+import net.sf.l2j.dungeon.data.DungeonData;
 import net.sf.l2j.event.bossevent.KTBConfig;
 import net.sf.l2j.event.ctf.CTFConfig;
 import net.sf.l2j.event.deathmath.DMConfig;
@@ -198,6 +199,11 @@ public class AdminAdmin implements IAdminCommandHandler
 					{
 						AdminCommandAccessRights.getInstance().reload();
 						activeChar.sendMessage("Admin commands rights have been reloaded.");
+					}
+					else if (type.startsWith("dungeon"))
+					{
+						DungeonData.getInstance().reload();
+						activeChar.sendMessage("The content of data/xml/custom/dugeon_event alls .xml has been reloaded.");
 					}
 					else if (type.startsWith("merchant"))
 					{

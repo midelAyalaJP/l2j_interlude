@@ -19,6 +19,9 @@ import net.sf.l2j.commons.lang.Tokenizer;
 import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.dailyreward.IBypassHandler;
 import net.sf.l2j.dailyreward.PlayerVariables;
+import net.sf.l2j.dungeon.data.DungeonData;
+import net.sf.l2j.dungeon.data.template.DungeonTemplate;
+import net.sf.l2j.dungeon.instancemanager.DungeonManager;
 import net.sf.l2j.email.items.MailData;
 import net.sf.l2j.email.items.MailManager;
 import net.sf.l2j.email.items.VoicedMailSend;
@@ -189,8 +192,73 @@ public final class RequestBypassToServer extends L2GameClientPacket
 				
 				ach.useAdminCommand(_command, activeChar);
 			}
+			else if (_command.startsWith("dungeon"))
+			{
+				final Tokenizer tokenizer = new Tokenizer(_command);
+				final String param = tokenizer.getToken(1);
+				if (param == null)
+				{
+					activeChar.sendMessage("Invalid command parameter.");
+					return;
+				}
+				switch (param.toLowerCase())
+				{
+					case "enter":
+					{
+						DungeonManager.getInstance().handleEnterDungeonId(activeChar, tokenizer);
+						break;
+					}
+					case "chat":
+					{
+					    final String htmlnavi = tokenizer.getToken(2); // index | history | ...
+					    int pageOrId = 1;
+
+					    final String t3 = tokenizer.getToken(3);
+					    if (t3 != null && t3.matches("\\d+"))
+					        pageOrId = Integer.parseInt(t3);
+
+					    final NpcHtmlMessage html = new NpcHtmlMessage(0);
+					    html.setFile("data/html/mods/dungeon/" + htmlnavi + ".htm");
+					    html.replace("%BACK%", "bypass dungeon chat index 1");
+
+					    if ("index".equalsIgnoreCase(htmlnavi))
+					    {
+					        final int PAGE_SIZE = 5;
+					        final int page = DungeonData.getInstance().clampPage(pageOrId, PAGE_SIZE);
+
+					        html.replace("%DUNGEON_LIST%", DungeonData.getInstance().buildDungeonListHtml(page, PAGE_SIZE));
+					        html.replace("%DUNGEON_PAGES%", DungeonData.getInstance().buildDungeonPagesHtml(page, PAGE_SIZE));
+					        html.replace("%PAGE%", String.valueOf(page));
+					    }
+					    else if ("history".equalsIgnoreCase(htmlnavi))
+					    {
+					        final int dungeonId = pageOrId;
+					        final DungeonTemplate d = DungeonData.getInstance().getDungeon(dungeonId);
+
+					        if (d == null)
+					        {
+					            html.replace("%DUNGEON_NAME%", "Unknown");
+					            html.replace("%DUNGEON_STORY%", "<font color=\"LEVEL\">Dungeon not found.</font>");
+					        }
+					        else
+					        {
+					            html.replace("%DUNGEON_NAME%", DungeonData.getInstance().safeHtml(d._name));
+					            html.replace("%DUNGEON_STORY%", DungeonData.getInstance().safeHtml(d._story != null ? d._story : "No story yet."));
+					        }
+					    }
+
+					    activeChar.sendPacket(html);
+					    break;
+					}
+
+
+					default:
+						activeChar.sendMessage("Unknown command.");
+						break;
+				}
+			}
 			
-			if (_command.startsWith("merchant"))
+			else if (_command.startsWith("merchant"))
 			{
 				final Tokenizer tokenizer = new Tokenizer(_command);
 				final String param = tokenizer.getToken(1);
@@ -237,47 +305,46 @@ public final class RequestBypassToServer extends L2GameClientPacket
 					}
 					case "buyreq":
 					{
-					    String category = tokenizer.getToken(2);
-					    String grade = tokenizer.getToken(3);
-					    int page = tokenizer.getAsInteger(4, 0);
-					    int index = tokenizer.getAsInteger(5, 0);
-
-					    MerchantData.getInstance().buyRequest(activeChar, category, grade, page, index);
-					    break;
+						String category = tokenizer.getToken(2);
+						String grade = tokenizer.getToken(3);
+						int page = tokenizer.getAsInteger(4, 0);
+						int index = tokenizer.getAsInteger(5, 0);
+						
+						MerchantData.getInstance().buyRequest(activeChar, category, grade, page, index);
+						break;
 					}
-
+					
 					case "buyconfirm":
 					{
-					    String category = tokenizer.getToken(2);
-					    String grade = tokenizer.getToken(3);
-					    int page = tokenizer.getAsInteger(4, 0);
-					    int index = tokenizer.getAsInteger(5, 0);
-
-					    MerchantData.getInstance().buyConfirm(activeChar, category, grade, page, index);
-					    break;
+						String category = tokenizer.getToken(2);
+						String grade = tokenizer.getToken(3);
+						int page = tokenizer.getAsInteger(4, 0);
+						int index = tokenizer.getAsInteger(5, 0);
+						
+						MerchantData.getInstance().buyConfirm(activeChar, category, grade, page, index);
+						break;
 					}
 					case "buycancel":
 					{
-					    String category = tokenizer.getToken(2);
-					    String grade = tokenizer.getToken(3);
-					    int page = tokenizer.getAsInteger(4, 0);
-					    int index = tokenizer.getAsInteger(5, 0);
-					    MerchantData.getInstance().buyCancel(activeChar, category, grade, page, index);
-					    break;
+						String category = tokenizer.getToken(2);
+						String grade = tokenizer.getToken(3);
+						int page = tokenizer.getAsInteger(4, 0);
+						int index = tokenizer.getAsInteger(5, 0);
+						MerchantData.getInstance().buyCancel(activeChar, category, grade, page, index);
+						break;
 					}
-
+					
 					case "search":
 					{
-					    String category = tokenizer.getToken(2);
-					    String grade = tokenizer.getToken(3);
-					    String search = tokenizer.getToken(4);
-					    int page = tokenizer.getAsInteger(5, 0);
-
-					    MerchantData.getInstance().showListSearch(activeChar, category, grade, page, search);
-					    break;
+						String category = tokenizer.getToken(2);
+						String grade = tokenizer.getToken(3);
+						String search = tokenizer.getToken(4);
+						int page = tokenizer.getAsInteger(5, 0);
+						
+						MerchantData.getInstance().showListSearch(activeChar, category, grade, page, search);
+						break;
 					}
-
-
+					
 				}
 			}
 			

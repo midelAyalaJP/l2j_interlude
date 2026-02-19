@@ -24,6 +24,7 @@ import net.sf.l2j.community.marketplace.AuctionTableCommunity;
 import net.sf.l2j.dailyreward.DailyRewardManager;
 import net.sf.l2j.dolls.DollsTable;
 import net.sf.l2j.dropdiary.DropDiaryManager;
+import net.sf.l2j.dungeon.data.DungeonData;
 import net.sf.l2j.email.items.MailManager;
 import net.sf.l2j.event.bossevent.IPManager;
 import net.sf.l2j.event.bossevent.KTBConfig;
@@ -408,7 +409,7 @@ public class GameServer
 		FarmZoneManager.getInstance();
 		PartyZoneReward.getInstance();
 		TimeZoneManager.getInstance();
-		
+		DungeonData.getInstance();
 		StringUtil.printSection("Events");
 		if (Config.ENABLE_EVENT_2008)
 		{
