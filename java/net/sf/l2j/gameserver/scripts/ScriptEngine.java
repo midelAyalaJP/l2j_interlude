@@ -3,11 +3,8 @@ package net.sf.l2j.gameserver.scripts;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.sf.l2j.gameserver.scripts.faenor.FaenorInterface;
-
 public class ScriptEngine
 {
-	protected EngineInterface _utils = FaenorInterface.getInstance();
 	//public static final Hashtable<String, ParserFactory> parserFactories = new Hashtable<String, ParserFactory>();
 	public static final Map<String, ParserFactory> parserFactories = new ConcurrentHashMap<>();
 

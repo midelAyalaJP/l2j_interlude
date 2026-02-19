@@ -156,8 +156,6 @@ import net.sf.l2j.gameserver.model.vehicles.BoatTalkingGludin;
 import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.L2GamePacketHandler;
 import net.sf.l2j.gameserver.scriptings.ScriptManager;
-import net.sf.l2j.gameserver.scripts.EventDroplist;
-import net.sf.l2j.gameserver.scripts.faenor.FaenorScriptEngine;
 import net.sf.l2j.gameserver.taskmanager.AttackStanceTaskManager;
 import net.sf.l2j.gameserver.taskmanager.DecayTaskManager;
 import net.sf.l2j.gameserver.taskmanager.GameTimeController;
@@ -411,15 +409,7 @@ public class GameServer
 		TimeZoneManager.getInstance();
 		DungeonData.getInstance();
 		StringUtil.printSection("Events");
-		if (Config.ENABLE_EVENT_2008)
-		{
-			EventDroplist.getInstance();
-			FaenorScriptEngine.getInstance();
-		}
-		else
-		{
-			_log.info("Faenor Event is disabled.");
-		}
+	
 		if (Config.CKM_ENABLED)
 		{
 			CharacterKillingManager.getInstance().init();

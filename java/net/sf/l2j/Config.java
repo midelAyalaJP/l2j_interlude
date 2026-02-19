@@ -441,8 +441,8 @@ public final class Config
 	public static int TRADE_PVP_AMOUNT;
 	public static int CUSTOM_HERO_CHAT_TIME;
 	
-	/** Variaveis Event Faenor */
-	public static boolean ENABLE_EVENT_2008;
+
+
 	public static boolean AUG_ITEM_TRADE;
 	public static String STRING_MULTISELL_DONATE;
 	
@@ -3333,7 +3333,6 @@ public final class Config
 		
 		STRING_MULTISELL_DONATE = enchant.getProperty("MultisellDonateName", "MultisellNew");
 		AUG_ITEM_TRADE = Boolean.valueOf(enchant.getProperty("AugItemTrade", "false"));
-		ENABLE_EVENT_2008 = Boolean.valueOf(enchant.getProperty("EnableEventFaenor", "false"));
 		
 		TIME_PICKUP_NORMAL = Integer.parseInt(enchant.getProperty("PickUpTimeNormal", "18000"));
 		TIME_PICKUP_BOSS = Integer.parseInt(enchant.getProperty("PickUpBoss", "18000"));
