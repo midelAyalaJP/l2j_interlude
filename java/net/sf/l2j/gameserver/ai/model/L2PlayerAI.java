@@ -213,49 +213,7 @@ public class L2PlayerAI extends L2PlayableAI
 	}
 	
 	
-
-/*	private void thinkAttack()
-	{
-	    final L2Character target = (L2Character) getTarget();
-	    if (target == null)
-	    {
-	        setTarget(null);
-	        setIntention(CtrlIntention.ACTIVE);
-	        return;
-	    }
-
-	    // Verifique se o ator está atacando com um arco
-	    if (_actor instanceof L2PcInstance)
-	    {
-	        L2PcInstance player = (L2PcInstance) _actor;
-	        
-	        // Se o jogador está usando um arco, permite o movimento durante o ataque
-	        if (player.getAttackType() == WeaponType.BOW)
-	        {
-	            if (maybeMoveToPawn(target, _actor.getPhysicalAttackRange()))
-	                return;
-	        }
-	    }
-
-	    if (maybeMoveToPawn(target, _actor.getPhysicalAttackRange()))
-	        return;
-
-	    if (target.isAlikeDead())
-	    {
-	        if (target instanceof L2PcInstance && ((L2PcInstance) target).isFakeDeath())
-	            target.stopFakeDeath(true);
-	        else
-	        {
-	            setIntention(CtrlIntention.ACTIVE);
-	            return;
-	        }
-	    }
-
-	    clientStopMoving(null);
-	    _actor.doAttack(target);
-	}*/
-
-
+ 
 	private void thinkCast()
 	{
 		Creature target = (Creature) getTarget();

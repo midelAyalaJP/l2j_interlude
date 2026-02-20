@@ -152,19 +152,21 @@ public class PlayableStat extends CharStat
 	@Override
 	public float getMoveSpeed()
 	{
-		// get base value
-		float baseValue = getBaseMoveSpeed();
-		
-		// apply zone modifier before final calculation
-		if (getActiveChar().isInsideZone(ZoneId.SWAMP))
-		{
-			final L2SwampZone zone = ZoneManager.getInstance().getZone(getActiveChar(), L2SwampZone.class);
-			if (zone != null)
-				baseValue *= (100 + zone.getMoveBonus()) / 100.0;
-		}
-		
-		// calculate speed
-		return (float) calcStat(Stats.RUN_SPEED, baseValue, null, null);
+	    float baseValue = getBaseMoveSpeed();
+
+	    // Swamp etc (você já tem)
+	    if (getActiveChar().isInsideZone(ZoneId.SWAMP))
+	    {
+	        final L2SwampZone zone = ZoneManager.getInstance().getZone(getActiveChar(), L2SwampZone.class);
+	        if (zone != null)
+	            baseValue *= (100 + zone.getMoveBonus()) / 100.0;
+	    }
+
+	    // >>> Ajuste "anti-slide" quando pathfinding/geodata está ativo
+	    if (getActiveChar().isOnGeodataPath())
+	        baseValue *= 0.92f; // 8% mais lento (ajuste fino: 0.90~0.97)
+
+	    return (float) calcStat(Stats.RUN_SPEED, baseValue, null, null);
 	}
 	
 	@Override

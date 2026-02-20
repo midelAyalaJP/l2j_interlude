@@ -364,86 +364,6 @@ abstract class AbstractAI implements Ctrl
 	{
 	}
 	
-	/**
-	 * Move the actor to Pawn server side AND client side by sending Server->Client packet MoveToPawn <I>(broadcast)</I>.<BR>
-	 * <BR>
-	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : Low level function, used by AI subclasses</B></FONT><BR>
-	 * <BR>
-	 * @param pawn
-	 * @param offset
-	 */
-	// protected void moveToPawn(L2Object pawn, int offset)
-	// {
-	// // Check if actor can move
-	// if (!_actor.isMovementDisabled())
-	// {
-	// if (offset < 10)
-	// offset = 10;
-	//
-	// if (pawn instanceof L2Npc && ((L2Npc) pawn).getNpcId() == 29025)
-	// {
-	// offset = 150; // it needs for baium npc correction
-	// }
-	//
-	// // prevent possible extra calls to this function (there is none?), also don't send movetopawn packets too often
-	// boolean sendPacket = true;
-	// if (_clientMoving && (_target == pawn))
-	// {
-	// if (_clientMovingToPawnOffset == offset)
-	// {
-	// if (System.currentTimeMillis() < _moveToPawnTimeout)
-	// return;
-	//
-	// sendPacket = false;
-	// }
-	// else if (_actor.isOnGeodataPath())
-	// {
-	// // minimum time to calculate new route is 2 seconds
-	// if (System.currentTimeMillis() < _moveToPawnTimeout + 1000)
-	// return;
-	// }
-	// }
-	//
-	// // Set AI movement data
-	// _clientMoving = true;
-	// _clientMovingToPawnOffset = offset;
-	// _target = pawn;
-	// _moveToPawnTimeout = System.currentTimeMillis() + 1000;
-	//
-	// if (pawn == null)
-	// return;
-	//
-	// if (!GeoEngine.getInstance().canSeeTarget(_actor, pawn))
-	// {
-	// offset = 0;
-	// }
-	//
-	// // Calculate movement data for a move to location action and add the actor to movingObjects of GameTimeController
-	// _actor.moveToLocation(pawn.getX(), pawn.getY(), pawn.getZ(), offset);
-	//
-	// if (!_actor.isMoving())
-	// {
-	// clientActionFailed();
-	// return;
-	// }
-	//
-	// // Send a Server->Client packet MoveToPawn/CharMoveToLocation to the actor and all L2PcInstance in its _knownPlayers
-	// if (pawn instanceof L2Character)
-	// {
-	// if (_actor.isOnGeodataPath())
-	// {
-	// _actor.broadcastPacket(new MoveToLocation(_actor));
-	// _clientMovingToPawnOffset = 0;
-	// }
-	// else if (sendPacket)
-	// _actor.broadcastPacket(new MoveToPawn(_actor, pawn, offset));
-	// }
-	// else
-	// _actor.broadcastPacket(new MoveToLocation(_actor));
-	// }
-	// else
-	// clientActionFailed();
-	// }
 	
 	protected void moveToPawn(L2Object pawn, int offset)
 	{
@@ -462,118 +382,123 @@ abstract class AbstractAI implements Ctrl
 		boolean sendPacket = true;
 		
 		final int currentTick = GameTimeController.getInstance().getGameTicks();
-		final int timeoutTicks = 500 / GameTimeController.MILLIS_IN_TICK; // 500ms = 5 ticks
-		final int geoTicks = 2000 / GameTimeController.MILLIS_IN_TICK; // 2s = 20 ticks
-		
+		final int timeoutTicks = 250 / GameTimeController.MILLIS_IN_TICK; // 250ms (mais responsivo)
+		final int geoTicks = 500 / GameTimeController.MILLIS_IN_TICK;     // 500ms (era 2s)
+		boolean onGeo = _actor.isOnGeodataPath();
+
 		if (_clientMoving && _target == pawn)
 		{
-			if (_clientMovingToPawnOffset == offset)
-			{
-				if (currentTick < _moveToPawnTimeout)
-					return;
-				
-				sendPacket = false;
-			}
-			else if (_actor.isOnGeodataPath())
-			{
-				if (currentTick < _moveToPawnTimeout + geoTicks)
-					return;
-			}
+		    if (_clientMovingToPawnOffset == offset)
+		    {
+		        // Em geodata path: não segure demais, o cliente precisa de correções frequentes
+		        final int limit = onGeo ? geoTicks : timeoutTicks;
+
+		        if (currentTick < _moveToPawnTimeout + limit)
+		            return;
+
+		        // Se não for geodata, podemos economizar o pacote às vezes
+		        sendPacket = onGeo; // em geo manda sempre
+		    }
 		}
-		
+
 		_clientMoving = true;
 		_clientMovingToPawnOffset = offset;
 		_target = pawn;
-		
 		_moveToPawnTimeout = currentTick + timeoutTicks;
-		
-		if (pawn == null)
-			return;
-			
-		// if (!GeoEngine.getInstance().canSeeTarget(_actor, pawn))
-		// {
-		// System.out.println("Não pode ver o alvo, offset será zerado.");
-		// offset = 0;
-		// }
-		
+
 		_actor.moveToLocation(pawn.getX(), pawn.getY(), pawn.getZ(), offset);
-		
+
 		if (!_actor.isMoving())
 		{
-			clientActionFailed();
-			return;
+		    clientActionFailed();
+		    return;
 		}
-		
+
 		if (pawn instanceof Creature)
 		{
-			if (_actor.isOnGeodataPath())
-			{
-				_actor.broadcastPacket(new MoveToLocation(_actor));
-				_clientMovingToPawnOffset = 0;
-			}
-			else if (sendPacket)
-			{
-				_actor.broadcastPacket(new MoveToPawn(_actor, pawn, offset));
-			}
+		    if (onGeo)
+		    {
+		        // Em geodata: sempre MoveToLocation (mais “natural” e estável)
+		        _actor.broadcastPacket(new MoveToLocation(_actor));
+		        _clientMovingToPawnOffset = 0;
+		    }
+		    else if (sendPacket)
+		    {
+		        _actor.broadcastPacket(new MoveToPawn(_actor, pawn, offset));
+		    }
 		}
 		else
 		{
-			_actor.broadcastPacket(new MoveToLocation(_actor));
+		    _actor.broadcastPacket(new MoveToLocation(_actor));
 		}
 	}
-	
-	/**
-	 * Move the actor to Location (x,y,z) server side AND client side by sending Server->Client packet CharMoveToLocation <I>(broadcast)</I>.<br>
-	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : Low level function, used by AI subclasses</B></FONT>
-	 * @param x
-	 * @param y
-	 * @param z
-	 */
-	// protected void moveTo(int x, int y, int z)
-	// {
-	// // Chek if actor can move
-	// if (!_actor.isMovementDisabled())
-	// {
-	// // Set AI movement data
-	// _clientMoving = true;
-	// _clientMovingToPawnOffset = 0;
-	//
-	// // Calculate movement data for a move to location action and add the actor to movingObjects of GameTimeController
-	// _actor.moveToLocation(x, y, z, 0);
-	//
-	// // Send a Server->Client packet CharMoveToLocation to the actor and all L2PcInstance in its _knownPlayers
-	// _actor.broadcastPacket(new MoveToLocation(_actor));
-	//
-	// }
-	// else
-	// clientActionFailed();
-	// }
-	
+	private int _moveToTimeout;
+	private int _moveToX;
+	private int _moveToY;
+	private int _moveToZ;
 	protected void moveTo(int x, int y, int z)
 	{
-		// Chek if actor can move
-		if (!_actor.isMovementDisabled())
-		{
-			// Set AI movement data
-			_clientMoving = true;
-			_clientMovingToPawnOffset = 0;
-			
-			if (_actor == null)// novo
-				return;
-			
-			// Calculate movement data for a move to location action and add the actor to movingObjects of GameTimeController
-			_actor.moveToLocation(x, y, z, 0);
-			if (!_actor.isMoving()) // evitar bug movimento
-			{
-				_actor.sendPacket(ActionFailed.STATIC_PACKET);
-				return;
-			}
-			// Send a Server->Client packet CharMoveToLocation to the actor and all L2PcInstance in its _knownPlayers
-			_actor.broadcastPacket(new MoveToLocation(_actor));
-			
-		}
-		else
-			clientActionFailed();
+	    if (_actor == null)
+	        return;
+
+	    if (_actor.isMovementDisabled())
+	    {
+	        clientActionFailed();
+	        return;
+	    }
+
+	    final int currentTick = GameTimeController.getInstance().getGameTicks();
+
+	    // Ajustes parecidos com moveToPawn()
+	    final int timeoutTicks = 250 / GameTimeController.MILLIS_IN_TICK; // 250ms
+	    final int geoTicks     = 500 / GameTimeController.MILLIS_IN_TICK; // 500ms
+	    final boolean onGeo    = _actor.isOnGeodataPath();
+
+	    // Evita spam: se já está movendo e o destino é "quase igual", ignore
+	    // (reduz slide por micro-cliques)
+	    if (_clientMoving)
+	    {
+	        final int dx = x - _moveToX;
+	        final int dy = y - _moveToY;
+	        final int dz = z - _moveToZ;
+
+	        // tolerância em unidades do jogo
+	        final int samePos2D = 30;  // 30~60 é um bom range
+	        final int samePosZ  = 80;
+
+	        if ((Math.abs(dx) <= samePos2D) && (Math.abs(dy) <= samePos2D) && (Math.abs(dz) <= samePosZ))
+	        {
+	            // destino quase igual: respeita timeout
+	            final int limit = onGeo ? geoTicks : timeoutTicks;
+	            if (currentTick < _moveToTimeout + limit)
+	                return;
+	        }
+	        else
+	        {
+	            // destino mudou bastante: ainda assim evita flood extremo
+	            if (currentTick < _moveToTimeout + timeoutTicks)
+	                return;
+	        }
+	    }
+
+	    _clientMoving = true;
+	    _clientMovingToPawnOffset = 0;
+
+	    _moveToX = x;
+	    _moveToY = y;
+	    _moveToZ = z;
+	    _moveToTimeout = currentTick;
+
+	    _actor.moveToLocation(x, y, z, 0);
+
+	    if (!_actor.isMoving())
+	    {
+	        _actor.sendPacket(ActionFailed.STATIC_PACKET);
+	        return;
+	    }
+
+	    // Em geo, MoveToLocation é o mais consistente
+	    _actor.broadcastPacket(new MoveToLocation(_actor));
 	}
 	
 	/**
