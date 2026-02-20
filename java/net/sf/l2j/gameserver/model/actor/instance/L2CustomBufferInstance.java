@@ -272,44 +272,6 @@ public class L2CustomBufferInstance extends L2NpcInstance
 		return "data/html/mods/buffer/" + filename + ".htm";
 	}
 	
-	/**
-	 * Sends an html packet to player with Give Buffs menu info for player and pet, depending on targetType parameter {player, pet}
-	 * @param player : The player to make checks on.
-	 */
-	// private void showGiveBuffsWindow(L2PcInstance player) {
-	// final StringBuilder sb = new StringBuilder(200);
-	//
-	// final Map<String, ArrayList<Integer>> schemes = BufferTable.getInstance().getPlayerSchemes(player.getObjectId());
-	// if (schemes == null || schemes.isEmpty()) {
-	// sb.append("<font color=\"LEVEL\">You haven't defined any scheme.</font>");
-	// } else {
-	// for (Map.Entry<String, ArrayList<Integer>> scheme : schemes.entrySet()) {
-	// // Filtrando os buffs protegidos
-	// ArrayList<Integer> visibleBuffs = new ArrayList<>(scheme.getValue());
-	// visibleBuffs.removeIf(CharEffectList.PROTECTED_BUFF_IDS::contains); // Remove buffs protegidos
-	//
-	// final int cost = getFee(scheme.getValue());
-	//
-	// // Exibindo o número de buffs visíveis (não protegidos)
-	// StringUtil.append(sb, "<font color=\"LEVEL\">", scheme.getKey(), " [", visibleBuffs.size(), " / ", player.getMaxBuffCount(), "]",
-	// ((cost > 0) ? " - cost: " + StringUtil.formatNumber(cost) : ""), "</font><br1>");
-	//
-	// // Ações
-	// StringUtil.append(sb, "<a action=\"bypass npc_%objectId%_givebuffs ", scheme.getKey(), " ", cost, "\">Use on Me</a>&nbsp;|&nbsp;");
-	// StringUtil.append(sb, "<a action=\"bypass npc_%objectId%_givebuffs ", scheme.getKey(), " ", cost, " pet\">Use on Pet</a>&nbsp;|&nbsp;");
-	// StringUtil.append(sb, "<a action=\"bypass npc_%objectId%_editschemes Buffs ", scheme.getKey(), " 1\">Edit</a>&nbsp;|&nbsp;");
-	// StringUtil.append(sb, "<a action=\"bypass npc_%objectId%_deletescheme ", scheme.getKey(), "\">Delete</a><br>");
-	// }
-	// }
-	//
-	// final NpcHtmlMessage html = new NpcHtmlMessage(0);
-	// html.setFile(getHtmlPath(getNpcId(), 99));
-	// html.replace("%schemes%", sb.toString());
-	// html.replace("%max_schemes%", Config.BUFFER_MAX_SCHEMES);
-	// html.replace("%objectId%", getObjectId());
-	// player.sendPacket(html);
-	// }
-	
 	private void showGiveBuffsWindow(Player player)
 	{
 		final StringBuilder sb = new StringBuilder(200);
@@ -329,14 +291,11 @@ public class L2CustomBufferInstance extends L2NpcInstance
 				
 				final int cost = getFee(scheme.getValue());
 				
-				// Exibindo o número de buffs visíveis (não protegidos)
-				StringUtil.append(sb, "<font color=\"LEVEL\">", scheme.getKey(), " [", visibleBuffs.size(), " / ", player.getMaxBuffCount(), "]", ((cost > 0) ? " - cost: " + StringUtil.formatNumber(cost) : ""), "</font><br1>");
+				 
+				StringUtil.append(sb, "<table width=280 bgcolor=0b0d10>", "<tr>", "<td width=180>", "<font color=LEVEL>", scheme.getKey(), "</font> ", "<font color=7f7f7f>[", visibleBuffs.size(), " / ", player.getMaxBuffCount(), "]</font>", ((cost > 0) ? " <font color=ffb74d>- cost: " + StringUtil.formatNumber(cost) + "</font>" : ""), "</td>", "<td width=100 align=right>", "</td>", "</tr>", "</table>");
 				
-				// Ações
-				StringUtil.append(sb, "<a action=\"bypass npc_%objectId%_givebuffs ", scheme.getKey(), " ", cost, "\">Use on Me</a>&nbsp;|&nbsp;");
-				StringUtil.append(sb, "<a action=\"bypass npc_%objectId%_givebuffs ", scheme.getKey(), " ", cost, " pet\">Use on Pet</a>&nbsp;|&nbsp;");
-				StringUtil.append(sb, "<a action=\"bypass npc_%objectId%_editschemes Buffs ", scheme.getKey(), " 1\">Edit</a>&nbsp;|&nbsp;");
-				StringUtil.append(sb, "<a action=\"bypass npc_%objectId%_deletescheme ", scheme.getKey(), "\">Delete</a><br>");
+				 
+				StringUtil.append(sb, "<table width=260>", "<tr>", "<td width=90 align=center>", "<button value=\"Use on Me\" action=\"bypass npc_%objectId%_givebuffs ", scheme.getKey(), " ", cost, "\" width=90 height=25 back=\"anim90.Anim\" fore=\"anim90.Anim\">", "</td>", "<td width=90 align=center>", "<button value=\"Use on Pet\" action=\"bypass npc_%objectId%_givebuffs ", scheme.getKey(), " ", cost, " pet", "\" width=90 height=25 back=\"anim90.Anim\" fore=\"anim90.Anim\">", "</td>", "<td width=45 align=center>", "<button value=\"Edit\" action=\"bypass npc_%objectId%_editschemes Buffs ", scheme.getKey(), " 1", "\" width=40 height=25 back=\"anim90.Anim\" fore=\"anim90.Anim\">", "</td>", "<td width=55 align=center>", "<button value=\"Delete\" action=\"bypass npc_%objectId%_deletescheme ", scheme.getKey(), "\" width=45 height=25 back=\"anim90.Anim\" fore=\"anim90.Anim\">", "</td>", "</tr>", "</table>", "<img src=\"l2ui.SquareWhite\" width=280 height=1><br1>");
 			}
 		}
 		
@@ -348,34 +307,7 @@ public class L2CustomBufferInstance extends L2NpcInstance
 		player.sendPacket(html);
 	}
 	
-	/**
-	 * This sends an html packet to player with Edit Scheme Menu info. This allows player to edit each created scheme (add/delete skills)
-	 * @param player : The player to make checks on.
-	 * @param groupType : The group of skills to select.
-	 * @param schemeName : The scheme to make check.
-	 * @param page The page.
-	 */
-	// private void showEditSchemeWindow(L2PcInstance player, String groupType, String schemeName, int page) {
-	// final NpcHtmlMessage html = new NpcHtmlMessage(0);
-	// final List<Integer> schemeSkills = BufferTable.getInstance().getScheme(player.getObjectId(), schemeName);
-	//
-	// // Filtrando os buffs protegidos para não contar na exibição
-	// long visibleSkillCount = schemeSkills.stream()
-	// .filter(skillId -> !CharEffectList.PROTECTED_BUFF_IDS.contains(skillId)) // Ignora buffs protegidos
-	// .count();
-	//
-	// html.setFile(getHtmlPath(getNpcId(), 100));
-	// html.replace("%schemename%", schemeName);
-	//
-	// // Exibe a contagem sem considerar os buffs protegidos
-	// html.replace("%count%", visibleSkillCount + " / " + player.getMaxBuffCount());
-	//
-	// html.replace("%typesframe%", getTypesFrame(groupType, schemeName));
-	// html.replace("%skilllistframe%", getGroupSkillList(player, groupType, schemeName, page));
-	// html.replace("%objectId%", getObjectId());
-	//
-	// player.sendPacket(html);
-	// }
+
 	private void showEditSchemeWindow(Player player, String groupType, String schemeName, int page)
 	{
 		
