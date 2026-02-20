@@ -11,6 +11,8 @@ import net.sf.l2j.gameserver.util.Broadcast;
 public class FOSManager
 {
 	protected static final Logger _log = Logger.getLogger(FOSManager.class.getName());
+	private Calendar NextEvent;
+	private final SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 	
 	/** Task for event cycles<br> */
 	private CTFStartTask _task;
@@ -56,42 +58,50 @@ public class FOSManager
 	 */
 	public void scheduleEventStart()
 	{
+		
 		try
 		{
 			Calendar currentTime = Calendar.getInstance();
-			Calendar nextStartTime = null;
 			Calendar testStartTime = null;
+			long flush2 = 0L;
+			long timeL = 0L;
+			int count = 0;
 			for (String timeOfDay : FOSConfig.FOS_EVENT_INTERVAL)
 			{
-				// Creating a Calendar object from the specified interval value
 				testStartTime = Calendar.getInstance();
 				testStartTime.setLenient(true);
 				String[] splitTimeOfDay = timeOfDay.split(":");
-				testStartTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(splitTimeOfDay[0]));
-				testStartTime.set(Calendar.MINUTE, Integer.parseInt(splitTimeOfDay[1]));
-				// If the date is in the past, make it the next day (Example: Checking for "1:00", when the time is 23:57.)
+				testStartTime.set(11, Integer.parseInt(splitTimeOfDay[0]));
+				testStartTime.set(12, Integer.parseInt(splitTimeOfDay[1]));
+				testStartTime.set(13, 0);
 				if (testStartTime.getTimeInMillis() < currentTime.getTimeInMillis())
 				{
-					testStartTime.add(Calendar.DAY_OF_MONTH, 1);
+					testStartTime.add(5, 1);
 				}
-				// Check for the test date to be the minimum (smallest in the specified list)
-				if ((nextStartTime == null) || (testStartTime.getTimeInMillis() < nextStartTime.getTimeInMillis()))
+				timeL = testStartTime.getTimeInMillis() - currentTime.getTimeInMillis();
+				if (count == 0)
 				{
-					nextStartTime = testStartTime;
+					flush2 = timeL;
+					NextEvent = testStartTime;
 				}
+				if (timeL < flush2)
+				{
+					flush2 = timeL;
+					NextEvent = testStartTime;
+				}
+				count++;
 			}
-			if (nextStartTime != null)
-			{
-				_task = new CTFStartTask(nextStartTime.getTimeInMillis());
-				 ThreadPool.execute(_task);
-			}
+			_log.info("[FOSEventEngine Event]: Proximo Evento: " + NextEvent.getTime().toString());
+			ThreadPool.schedule(new CTFStartTask(flush2), flush2);
 		}
 		catch (Exception e)
 		{
-			_log.warning("FOSEventEngine[FOSManager.scheduleEventStart()]: Error figuring out a start time. Check FOSEventInterval in config file.");
+			System.out.println("[FOSEventEngine Event]: Algum erro nas config foi encontrado!");
 		}
+		
+		
 	}
-	
+
 	/**
 	 * Method to start participation
 	 */
@@ -287,7 +297,8 @@ public class FOSManager
 		protected static final FOSManager _instance = new FOSManager();
 	}
 
-	private final SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+ 
+	
 	public String getNextTime()
 	{
 		if (getNextEventTime().getTime() != null)
@@ -299,29 +310,49 @@ public class FOSManager
 		try
 		{
 			Calendar currentTime = Calendar.getInstance();
-			Calendar nextStartTime = null;
 			Calendar testStartTime = null;
+			long flush2 = 0, timeL = 0;
+			int count = 0;
+			Calendar nextEvent = null;
 			for (String timeOfDay : FOSConfig.FOS_EVENT_INTERVAL)
 			{
-				// Creating a Calendar object from the specified interval value
 				testStartTime = Calendar.getInstance();
 				testStartTime.setLenient(true);
 				String[] splitTimeOfDay = timeOfDay.split(":");
 				testStartTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(splitTimeOfDay[0]));
 				testStartTime.set(Calendar.MINUTE, Integer.parseInt(splitTimeOfDay[1]));
-				// If the date is in the past, make it the next day (Example: Checking for "1:00", when the time is 23:57.)
+				testStartTime.set(Calendar.SECOND, 00);
 				if (testStartTime.getTimeInMillis() < currentTime.getTimeInMillis())
+				{
 					testStartTime.add(Calendar.DAY_OF_MONTH, 1);
-				// Check for the test date to be the minimum (smallest in the specified list)
-				if (nextStartTime == null || testStartTime.getTimeInMillis() < nextStartTime.getTimeInMillis())
-					nextStartTime = testStartTime;
+				}
+				
+				timeL = testStartTime.getTimeInMillis() - currentTime.getTimeInMillis();
+				
+				if (count == 0)
+				{
+					flush2 = timeL;
+					nextEvent = testStartTime;
+				}
+				
+				if (timeL < flush2)
+				{
+					flush2 = timeL;
+					nextEvent = testStartTime;
+				}
+				count++;
 			}
-			return nextStartTime;
+			//_log.info("Tournament: Next Event " + nextEvent.getTime().toString());
+			return nextEvent;
 		}
 		catch (Exception e)
 		{
-			_log.warning("FOSEventEngine: Error figuring out a start time. Check FOSEventInterval in config file.");
+			e.printStackTrace();
+			System.out.println("FOSEventEngine Invade]: "+e);
 			return null;
 		}
+		
 	}
+	
+	
 }
