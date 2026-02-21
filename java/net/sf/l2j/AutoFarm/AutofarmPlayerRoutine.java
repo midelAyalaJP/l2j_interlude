@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -63,6 +64,13 @@ public class AutofarmPlayerRoutine
 {
 	private final Player player;
 	private Creature committedTarget = null;
+	private ScheduledFuture<?> sweepTask = null; // Task para aguardar sweep
+	private boolean waitingForSweep = false; // Flag indicando se está aguardando sweep
+	
+	// Constantes para Spoil e Sweep
+	private static final int SPOIL_SKILL_ID = 254; // Skill de Spoiler (Scavenger)
+	private static final int SWEEP_SKILL_ID = 42; // Skill de Sweeper
+	private static final int SPOIL_PERCENTAGE_THRESHOLD = 100; // % de HP do mob para usar spoil
 	
 	public AutofarmPlayerRoutine(Player player)
 	{
@@ -78,7 +86,6 @@ public class AutofarmPlayerRoutine
 			player.setAutoFarm(false);
 			Autofarm.showAutoFarm(player);
 			player.broadcastUserInfo();
-			// AutoFarmCBBypasses.showAutoFarmBoard(player, "AutoFarm");
 			return;
 		}
 		if (Config.ENABLE_DUALBOX_AUTOFARM)
@@ -106,7 +113,7 @@ public class AutofarmPlayerRoutine
 				return;
 			}
 		}
-		// Nao executar auto farm estando ja morto.
+		
 		if (player.isDead())
 		{
 			player.setAutoFarm(false);
@@ -115,15 +122,23 @@ public class AutofarmPlayerRoutine
 			player.broadcastUserInfo();
 			return;
 		}
+		
 		L2MonsterInstance monster = player.getTarget() instanceof L2MonsterInstance ? (L2MonsterInstance) player.getTarget() : null;
 		if (monster != null && !GeoEngine.getInstance().canSeeTarget(player, monster))
 		{
 			monster = null;
 			player.setTarget(monster);
 		}
-		if (!player.isMoving()) // Fix cancelar funsoes quando usar click movimento.
+		
+		if (!player.isMoving())
 		{
 			assistParty();
+			
+			if (checkAndProcessSweep())
+			{
+				return;
+			}
+			
 			checkSpoil();
 			targetEligibleCreature();
 			attack();
@@ -132,6 +147,118 @@ public class AutofarmPlayerRoutine
 			checkHealthPots();
 		}
 		
+	}
+	
+	private boolean checkAndProcessSweep()
+	{
+		
+		if (waitingForSweep)
+		{
+			return true;
+		}
+		
+		L2MonsterInstance deadMobWithSpoil = findDeadMobWithSpoil();
+		
+		if (deadMobWithSpoil != null)
+		{
+			
+			cancelSweepTask();
+			
+			startSweepProcess(deadMobWithSpoil);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private L2MonsterInstance findDeadMobWithSpoil()
+	{
+		List<L2MonsterInstance> deadMobs = getKnownMonstersInRadius(player, player.getRadius(), creature -> creature.isDead() && creature.getSpoilerId() == player.getObjectId() && creature.isSpoiled() && GeoEngine.getInstance().canSeeTarget(player, creature));
+		
+		if (deadMobs.isEmpty())
+			return null;
+		
+		return deadMobs.stream().min(Comparator.comparingDouble(m -> player.getDistanceSq(m))).orElse(null);
+	}
+	
+	private void startSweepProcess(L2MonsterInstance deadMob)
+	{
+		waitingForSweep = true;
+		
+		// Para qualquer movimento/ataque atual
+		player.getAI().setIntention(CtrlIntention.IDLE);
+		
+		// Define como alvo
+		committedTarget = deadMob;
+		player.setTarget(deadMob);
+		
+		player.sendMessage("Aguardando para usar Sweep no monstro...");
+		
+		// Move para perto do mob se necessário
+		if (player.getDistanceSq(deadMob) > 100 * 100)
+		{
+			player.moveToLocation(deadMob.getX(), deadMob.getY(), deadMob.getZ(), 0);
+		}
+		
+		sweepTask = ThreadPool.scheduleAtFixedRate(new Runnable()
+		{
+			int attempts = 0;
+			
+			@Override
+			public void run()
+			{
+				
+				if (deadMob.isDead() && deadMob.getSpoilerId() == player.getObjectId() && deadMob.isSpoiled())
+				{
+					L2Skill sweeper = player.getSkill(SWEEP_SKILL_ID);
+					
+					if (sweeper != null && !player.isCastingNow() && !player.isCastingSimultaneouslyNow())
+					{
+						
+						if (player.getDistanceSq(deadMob) <= 100 * 100)
+						{
+							
+							player.sendMessage("Usando Sweep no monstro...");
+							useMagicSkill(sweeper, false);
+							
+							ThreadPool.schedule(() -> {
+								waitingForSweep = false;
+								cancelSweepTask();
+								player.sendMessage("Sweep concluido!");
+							}, 500);
+							
+							return;
+						}
+						
+						player.moveToLocation(deadMob.getX(), deadMob.getY(), deadMob.getZ(), 0);
+					}
+					
+					attempts++;
+					if (attempts > 10)
+					{
+						waitingForSweep = false;
+						cancelSweepTask();
+						player.sendMessage("Nao foi possivel usar Sweep. Continuando farming...");
+					}
+				}
+				else
+				{
+					
+					waitingForSweep = false;
+					cancelSweepTask();
+					player.sendMessage("Monstro nao está mais disponível para sweep.");
+				}
+			}
+		}, 100, 500);
+	}
+	
+	private void cancelSweepTask()
+	{
+		if (sweepTask != null && !sweepTask.isDone())
+		{
+			sweepTask.cancel(false);
+			sweepTask = null;
+		}
 	}
 	
 	public boolean AutoFarmIP(Player activeChar, Integer numberBox, Boolean forcedTeleport)
@@ -251,6 +378,42 @@ public class AutofarmPlayerRoutine
 	
 	private void useAppropriateSpell()
 	{
+		
+		// Não usa skills se estiver aguardando sweep
+		if (waitingForSweep)
+			return;
+		
+		L2MonsterInstance target = getMonsterTarget();
+		if (target == null)
+			return;
+		
+		// PRIORIDADE 1: Se o monstro está morto e tem spoil, usa SWEEP (coletar)
+		if (target.isDead() && target.getSpoilerId() == player.getObjectId() && target.isSpoiled())
+		{
+			L2Skill sweeper = player.getSkill(SWEEP_SKILL_ID);
+			if (sweeper != null && !player.isCastingNow() && !player.isCastingSimultaneouslyNow())
+			{
+				useMagicSkill(sweeper, false);
+				return;
+			}
+		}
+		
+		// PRIORIDADE 2: Se o monstro está vivo e sem spoil, usa SPOIL
+		if (!target.isDead() && !monsterIsAlreadySpoiled() && canUseSpoil(target))
+		{
+			double targetHpPercent = target.getCurrentHp() * 100.0 / target.getMaxHp();
+			if (targetHpPercent <= SPOIL_PERCENTAGE_THRESHOLD)
+			{
+				L2Skill spoilSkill = player.getSkill(SPOIL_SKILL_ID);
+				if (spoilSkill != null && !player.isCastingNow() && !player.isCastingSimultaneouslyNow())
+				{
+					player.setTarget(target);
+					useMagicSkill(spoilSkill, false);
+					return;
+				}
+			}
+		}
+		
 		L2Skill chanceSkill = nextAvailableSkill(getChanceSpells(), AutofarmSpellType.Chance);
 		
 		if (chanceSkill != null && player.getTarget() instanceof L2MonsterInstance && !(chanceSkill.getSkillType() == L2SkillType.SWEEP))
@@ -348,19 +511,48 @@ public class AutofarmPlayerRoutine
 	
 	private void checkSpoil()
 	{
-		if (canBeSweepedByMe() && getMonsterTarget().isDead())
+		L2MonsterInstance target = getMonsterTarget();
+		
+		// Se o alvo é nulo ou não é um monstro, retorna
+		if (target == null)
+			return;
+		
+		// PRIORIDADE 1: Se o monstro está morto, tenta usar SWEEP (coletar)
+		if (target.isDead())
 		{
-			L2Skill sweeper = player.getSkill(42);
-			if (sweeper == null)
-				return;
-			
-			useMagicSkill(sweeper, false);
+			// Verifica se o monstro tem spoil disponível e se fui eu que spoilei
+			if (target.getSpoilerId() == player.getObjectId() && target.isSpoiled())
+			{
+				L2Skill sweeper = player.getSkill(SWEEP_SKILL_ID);
+				if (sweeper != null && !player.isCastingNow() && !player.isCastingSimultaneouslyNow())
+				{
+					// Usa sweep no monstro morto
+					useMagicSkill(sweeper, false);
+					player.sendMessage("Coletando spoil do monstro morto...");
+				}
+			}
+			return;
 		}
-	}
-	
-	private boolean canBeSweepedByMe()
-	{
-		return getMonsterTarget() != null && getMonsterTarget().isDead() && getMonsterTarget().getSpoilerId() == player.getObjectId();
+		
+		// PRIORIDADE 2: Se o monstro está vivo, verifica se pode usar SPOIL
+		if (!target.isDead() && !monsterIsAlreadySpoiled() && canUseSpoil(target))
+		{
+			L2Skill spoilSkill = player.getSkill(SPOIL_SKILL_ID);
+			
+			if (spoilSkill != null && !player.isCastingNow() && !player.isCastingSimultaneouslyNow())
+			{
+				// Verifica se o monstro está com % de HP ideal para spoil
+				double targetHpPercent = target.getCurrentHp() * 100.0 / target.getMaxHp();
+				
+				if (targetHpPercent <= SPOIL_PERCENTAGE_THRESHOLD)
+				{
+					// Usa spoil no monstro
+					player.setTarget(target);
+					useMagicSkill(spoilSkill, false);
+					player.sendMessage("Usando spoil no monstro...");
+				}
+			}
+		}
 	}
 	
 	private boolean monsterIsAlreadySpoiled()
@@ -423,6 +615,35 @@ public class AutofarmPlayerRoutine
 		
 		// Caso contrário, usa a magia com o alvo atual
 		player.useMagic(skill, false, false);
+	}
+	
+	private boolean canUseSpoil(L2MonsterInstance target)
+	{
+		// Verifica se o jogador tem a skill de spoil
+		if (player.getSkill(SPOIL_SKILL_ID) == null)
+		{
+			return false;
+		}
+		
+		// Verifica se é uma classe que pode usar spoil
+		if (!isSpoilerClass(player))
+		{
+			return false;
+		}
+		
+		// Verifica se o monstro pode ser spoileado (não é raid boss, etc)
+		if (target instanceof L2RaidBossInstance || target instanceof L2GrandBossInstance || target instanceof L2ChestInstance)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private static boolean isSpoilerClass(Player player)
+	{
+		ClassId classId = player.getClassId();
+		return classId == ClassId.SCAVENGER || classId == ClassId.BOUNTY_HUNTER || classId == ClassId.FORTUNE_SEEKER;
 	}
 	
 	private void physicalAttack()
@@ -769,51 +990,48 @@ public class AutofarmPlayerRoutine
 	
 	private void useMagicSkill(L2Skill skill, Boolean forceOnSelf)
 	{
-		// Verifica se a habilidade é de teletransporte e se o jogador tem karma positivo (não pode teleportar)
+		
 		if (skill.getSkillType() == L2SkillType.RECALL && !Config.KARMA_PLAYER_CAN_TELEPORT && player.getKarma() > 0)
 		{
-			player.sendPacket(ActionFailed.STATIC_PACKET); // Envia pacote de falha de ação
+			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
-		// Se a habilidade for do tipo toggle e o jogador estiver montado, não pode usar a habilidade
 		if (skill.isToggle() && player.isMounted())
 		{
-			player.sendPacket(ActionFailed.STATIC_PACKET); // Envia pacote de falha de ação
+			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
-		// Se o jogador estiver fora de controle (ex: stun, sleep, etc.), não pode usar a habilidade
 		if (player.isOutOfControl())
 		{
-			player.sendPacket(ActionFailed.STATIC_PACKET); // Envia pacote de falha de ação
+			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
-		// Se o jogador estiver atacando, cria uma ação para lançar a habilidade
 		if (player.isAttackingNow())
 		{
 			player.getAI().setNextAction(new NextAction(CtrlEvent.EVT_READY_TO_ACT, CtrlIntention.CAST, () -> {
-				// Verifica se o alvo está morto antes de lançar a habilidade
+				
 				if (player.getTarget() != null && committedTarget != null && committedTarget.isDead())
 				{
-					player.sendPacket(ActionFailed.STATIC_PACKET); // Envia pacote de falha de ação
-					// System.out.println("O alvo está morto e a habilidade não pode ser usada!"); // Imprime no console
-					return; // Não lança a habilidade se o alvo estiver morto
+					player.sendPacket(ActionFailed.STATIC_PACKET);
+					
+					return;
 				}
-				castSpellWithAppropriateTarget(skill, forceOnSelf); // Lança a habilidade se o alvo estiver vivo
+				castSpellWithAppropriateTarget(skill, forceOnSelf);
 			}));
 		}
 		else
 		{
-			// Verifica se o alvo está morto antes de lançar a habilidade
+			
 			if (player.getTarget() != null && committedTarget != null && committedTarget.isDead())
 			{
-				player.sendPacket(ActionFailed.STATIC_PACKET); // Envia pacote de falha de ação
-				// System.out.println("O alvo está morto e a habilidade não pode ser usada!"); // Imprime no console
-				return; // Não lança a habilidade se o alvo estiver morto
+				player.sendPacket(ActionFailed.STATIC_PACKET);
+				
+				return;
 			}
-			castSpellWithAppropriateTarget(skill, forceOnSelf); // Lança a habilidade se o alvo estiver vivo
+			castSpellWithAppropriateTarget(skill, forceOnSelf);
 		}
 	}
 	
