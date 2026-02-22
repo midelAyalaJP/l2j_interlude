@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<merchantList category="custom_weapons" grade="S">
+<!-- Icarus Bow - Focus -->
+<merchant product="9507-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Blade - Focus -->
+<merchant product="9524-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Dagger - Crt. Damage -->
+<merchant product="9514-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Hammer - Health -->
+<merchant product="9510-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Fists - Crt. Stun -->
+<merchant product="9520-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Magic Sword - Acumen -->
+<merchant product="9526-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Spear - Crt. Stun -->
+<merchant product="9530-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Staff - Acumen -->
+<merchant product="9534-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Big Sword - Health -->
+<merchant product="9504-1" ingredient="3470-25;6392-150;6393-500"/>
+<!-- Icarus Dual Edge -->
+<merchant product="9537-1" ingredient="3470-25;6392-150;6393-500"/>
+</merchantList>

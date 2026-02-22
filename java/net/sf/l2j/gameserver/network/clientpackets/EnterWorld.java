@@ -34,13 +34,13 @@ import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
 import net.sf.l2j.gameserver.instancemanager.PetitionManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns;
 import net.sf.l2j.gameserver.instancemanager.custom.HeroManagerCustom;
+import net.sf.l2j.gameserver.model.GmAccessService;
 import net.sf.l2j.gameserver.model.L2Clan;
 import net.sf.l2j.gameserver.model.L2Clan.SubPledge;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2World;
 import net.sf.l2j.gameserver.model.RemoteClassMaster;
 import net.sf.l2j.gameserver.model.actor.Player;
-import net.sf.l2j.gameserver.model.actor.Player.PunishLevel;
 import net.sf.l2j.gameserver.model.base.ClassRace;
 import net.sf.l2j.gameserver.model.entity.Castle;
 import net.sf.l2j.gameserver.model.entity.ClanHall;
@@ -79,7 +79,6 @@ import net.sf.l2j.gameserver.skills.AbnormalEffect;
 import net.sf.l2j.gameserver.taskmanager.GameTimeController;
 import net.sf.l2j.gameserver.util.Broadcast;
 import net.sf.l2j.gameserver.util.HWID;
-import net.sf.l2j.gameserver.util.Util;
 import net.sf.l2j.hwid.Hwid;
 
 public class EnterWorld extends L2GameClientPacket
@@ -106,13 +105,7 @@ public class EnterWorld extends L2GameClientPacket
 			activeChar.getAppearance().setNameColor(Config.MASTERACCESS_NAME_COLOR);
 			activeChar.getAppearance().setTitleColor(Config.MASTERACCESS_TITLE_COLOR);
 			
-			if (Config.ENABLE_NAME_GMS_CHECK)
-			{
-				if (!Util.contains(Config.GM_NAMES, activeChar.getName()))
-				{
-					activeChar.setPunishLevel(PunishLevel.ACC, 0);
-				}
-			}
+			GmAccessService.onEnterWorld(activeChar);
 			
 			if (Config.GM_SUPER_HASTE)
 				SkillTable.getInstance().getInfo(7029, 4).getEffects(activeChar, activeChar);

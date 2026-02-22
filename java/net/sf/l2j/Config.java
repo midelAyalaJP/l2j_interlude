@@ -398,8 +398,7 @@ public final class Config
 	public static boolean PLAYERS_NORMAIS_USED_RESTRICTION_ITEMS;
 	public static boolean ENABLE_MP_REGE_ORCS_MYSTICS;
 	public static List<Integer> ITEMS_NO_CONSUME;
-	public static String[] GM_NAMES;
-	public static boolean ENABLE_NAME_GMS_CHECK;
+ 
 	public static List<Integer> IDMULTISELLLOGDONATE;
 	public static boolean ENABLE_CHECK_DONATE_ITEMS;
 	public static boolean ENABLE_TRADE_TRACK;
@@ -3090,8 +3089,6 @@ public final class Config
 		ENABLE_TRADE_TRACK = Boolean.parseBoolean(Protection.getProperty("EnableTradeTrack", "False"));
 		ENABLE_CHECK_DONATE_ITEMS = Boolean.parseBoolean(Protection.getProperty("RegistreMultisellItems", "False"));
 		IDMULTISELLLOGDONATE = List.of(Protection.getProperty("IdMultisellLogDonate", "").replace(" ", "").split(",")).stream().map(String::hashCode).collect(Collectors.toList());
-		ENABLE_NAME_GMS_CHECK = Boolean.parseBoolean(Protection.getProperty("CheckNamesGMS", "False"));
-		GM_NAMES = Protection.getProperty("GmNames", "").split(",");
 		USER_TIME_ARGUMENT_ITEM = Protection.getProperty("UserTimeArgumentItem", 4200);
 		// Enchant Skill NPC
 		NPC_ENCHANT_SKILL_ID = Integer.parseInt(Protection.getProperty("NpcEnchantSkillID", "6392"));
@@ -3107,28 +3104,7 @@ public final class Config
 		CHAT_FILTER_PUNISHMENT_PARAM1 = Protection.getProperty("SayFilterPunishmentParam1", 1);
 		CHAT_FILTER_PUNISHMENT_PARAM2 = Protection.getProperty("SayFilterPunishmentParam2", 1000);
 		CHAT_FILTER_CHARS = Protection.getProperty("SayFilterWrite", "********");
-		// if (USE_SAY_FILTER)
-		// {
-		// try
-		// {
-		// LineNumberReader lnr = new LineNumberReader(new BufferedReader(new FileReader(new File(SAY_FILTER_FILE))));
-		// String line = null;
-		// while ((line = lnr.readLine()) != null)
-		// {
-		// if (line.trim().length() == 0 || line.startsWith("#"))
-		// {
-		// continue;
-		// }
-		// FILTER_LIST.add(line.trim());
-		// }
-		// _log.info("Chat Filter: Loaded " + FILTER_LIST.size() + " words");
-		// }
-		// catch (Exception e)
-		// {
-		// e.printStackTrace();
-		// throw new Error("Failed to Load "+SAY_FILTER_FILE+" File.");
-		// }
-		// }
+		
 		if (USE_SAY_FILTER)
 		{
 			try (LineNumberReader lnr = new LineNumberReader(new BufferedReader(new FileReader(new File(SAY_FILTER_FILE)))))

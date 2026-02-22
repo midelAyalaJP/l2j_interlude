@@ -154,6 +154,9 @@
 
 	<!-- CHANGE ACCESS LEVEL -->
 	<aCar name="admin_changelvl" accessLevel="1" />
+	<aCar name="admin_setaccess" accessLevel="1" />
+	<aCar name="admin_banlvl" accessLevel="1" />
+	<aCar name="admin_changelv" accessLevel="1" />
 
 	<!-- CREATE ITEM -->
 	<aCar name="admin_itemcreate" accessLevel="1" />

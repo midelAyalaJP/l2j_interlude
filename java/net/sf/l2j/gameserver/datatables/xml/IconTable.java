@@ -22,6 +22,12 @@ public class IconTable
 	{
 		return SingletonHolder._instance;
 	}
+	public void reload()
+	{
+		_icons.clear();
+		load();;
+	}
+	
 
 	protected IconTable()
 	{
@@ -75,4 +81,6 @@ public class IconTable
 	{
 		protected static final IconTable _instance = new IconTable();
 	}
+
+	
 }

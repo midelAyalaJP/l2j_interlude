@@ -2,73 +2,73 @@ package net.sf.l2j.gameserver.handler.admincommandhandlers;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.ConnectionPool;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
+import net.sf.l2j.gameserver.model.GmAccessService;
 import net.sf.l2j.gameserver.model.L2World;
 import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.network.SystemMessageId;
-import net.sf.l2j.gameserver.util.Util;
 
-/**
- * This class handles following admin commands: - changelvl = change a character's access level Can be used for character ban (as opposed to regular //ban that affects accounts) or to grant mod/GM privileges ingame
- */
 public class AdminChangeAccessLevel implements IAdminCommandHandler
 {
+	private static final Logger LOGGER = Logger.getLogger(AdminChangeAccessLevel.class.getName());
+	
 	private static final String[] ADMIN_COMMANDS =
 	{
-		"admin_changelvl"
+		"admin_changelvl",
+		"admin_setaccess",
+		"admin_banlvl",
+		"admin_changelv" // se você tiver variações antigas
 	};
+	
+	// Ajuste se quiser impor limites
+	private static final int MIN_LEVEL = -1; // <= 0 costuma ser ban/sem acesso
+	private static final int MAX_LEVEL = 127; // exemplo; ajuste ao seu projeto
 	
 	@Override
 	public boolean useAdminCommand(String command, Player activeChar)
 	{
-		String[] parts = command.split(" ");
+		if (activeChar == null)
+			return false;
+		
+		final String[] parts = command.trim().split("\\s+");
+		
+		// Aceita: //changelvl <lvl> (no target) OR //changelvl <player> <lvl>
 		if (parts.length == 2)
 		{
-			try
+			final Integer lvl = parseInt(parts[1]);
+			if (lvl == null)
+				return showUsage(activeChar);
+			
+			if (!(activeChar.getTarget() instanceof Player))
 			{
-				int lvl = Integer.parseInt(parts[1]);
-				if (activeChar.getTarget() instanceof Player)
-					onLineChange(activeChar, (Player) activeChar.getTarget(), lvl);
-				else
-					activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
+				activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
+				return true;
 			}
-			catch (Exception e)
-			{
-				activeChar.sendMessage("Usage: //changelvl <target_new_level> | <player_name> <new_level>");
-			}
+			
+			final Player target = (Player) activeChar.getTarget();
+			return applyAccessLevel(activeChar, target, target.getName(), lvl);
 		}
 		else if (parts.length == 3)
 		{
-			String name = parts[1];
-			int lvl = Integer.parseInt(parts[2]);
-			Player player = L2World.getInstance().getPlayer(name);
-			if (player != null)
-				onLineChange(activeChar, player, lvl);
-			else
-			{
-				try (Connection con = ConnectionPool.getConnection())
-				{
-					PreparedStatement statement = con.prepareStatement("UPDATE characters SET accesslevel=? WHERE char_name=?");
-					statement.setInt(1, lvl);
-					statement.setString(2, name);
-					statement.execute();
-					int count = statement.getUpdateCount();
-					statement.close();
-					if (count == 0)
-						activeChar.sendMessage("Character not found or access level unaltered.");
-					else
-						activeChar.sendMessage("Character's access level is now set to " + lvl);
-				}
-				catch (Exception e)
-				{
-				}
-			}
+			final String name = parts[1];
+			final Integer lvl = parseInt(parts[2]);
+			
+			if (name == null || name.isBlank() || lvl == null)
+				return showUsage(activeChar);
+			
+			// tenta online primeiro
+			final Player target = L2World.getInstance().getPlayer(name);
+			
+			GmAccessService.reconcilePlayerByNameOrObj(target.getName(), target.getObjectId());
+			return applyAccessLevel(activeChar, target, name, lvl);
 		}
 		
-		return true;
+		return showUsage(activeChar);
 	}
 	
 	@Override
@@ -77,28 +77,101 @@ public class AdminChangeAccessLevel implements IAdminCommandHandler
 		return ADMIN_COMMANDS;
 	}
 	
-	/**
-	 * @param activeChar
-	 * @param player
-	 * @param lvl
-	 */
-	private static void onLineChange(Player activeChar, Player player, int lvl)
+	private static boolean applyAccessLevel(Player activeChar, Player targetOnline, String name, int lvl)
 	{
-		// Proteção: só permitir setar lvl > 0 se o nome estiver autorizado
-		if (Config.ENABLE_NAME_GMS_CHECK && !Util.contains(Config.GM_NAMES, player.getName()))
+		// valida range
+		if (lvl < MIN_LEVEL || lvl > MAX_LEVEL)
 		{
-			activeChar.sendMessage("Your character name is not on the authorized GM list.");
-			return;
+			activeChar.sendMessage("AccessLevel inválido. Range permitido: " + MIN_LEVEL + " .. " + MAX_LEVEL);
+			return true;
 		}
 		
-		player.setAccessLevel(lvl);
-		if (lvl > 0)
-			player.sendMessage("Your access level has been changed to " + lvl);
-		else
+		// opcional: impedir mexer em si mesmo
+		if (targetOnline != null && targetOnline == activeChar)
 		{
-			player.sendMessage("Your character has been banned.");
-			player.logout();
+			activeChar.sendMessage("Você não pode alterar seu próprio access level por este comando.");
+			return true;
 		}
-		activeChar.sendMessage("Character's access level is now set to " + lvl + ". Effects won't be noticeable until next session.");
+		
+		// Atualiza DB (fonte de verdade)
+		final int rows = updateAccessLevelInDb(name, lvl);
+		if (rows == 0)
+		{
+			// se não achou no DB e não está online com esse nome, informa.
+			if (targetOnline == null)
+			{
+				activeChar.sendMessage("Character \"" + name + "\" não encontrado (online/offline).");
+				return true;
+			}
+			// Se está online e não atualizou DB, ainda tentamos prosseguir com sync online,
+			// mas avisamos. (Pode ocorrer se coluna/nome diferir.)
+			activeChar.sendMessage("Aviso: não foi possível atualizar no DB para \"" + name + "\" (0 rows).");
+		}
+		
+		// Se o player está online, sincroniza o objeto em memória
+		if (targetOnline != null)
+		{
+			targetOnline.setAccessLevel(lvl);
+			
+			if (lvl <= 0)
+			{
+				targetOnline.sendMessage("Seu personagem foi banido (access level: " + lvl + ").");
+				targetOnline.logout();
+			}
+			else
+			{
+				targetOnline.sendMessage("Seu access level foi alterado para " + lvl + ".");
+				// Após mudar access level (DB/online):
+				GmAccessService.reconcilePlayerByNameOrObj(name, targetOnline.getObjectId());
+			}
+		}
+		
+		activeChar.sendMessage("Access level de \"" + name + "\" agora é " + lvl + "." + (targetOnline == null ? " (offline)" : " (online)") + " DB=" + rows + " row(s).");
+		
+		// dica útil: muitas permissões são lidas no login
+		if (lvl > 0)
+			activeChar.sendMessage("Obs: algumas permissões/efeitos podem exigir relog do jogador.");
+		
+		return true;
+	}
+	
+	private static int updateAccessLevelInDb(String name, int lvl)
+	{
+		// aCis costuma usar characters.char_name
+		final String sql = "UPDATE characters SET accesslevel=? WHERE char_name=?";
+		try (Connection con = ConnectionPool.getConnection(); PreparedStatement ps = con.prepareStatement(sql))
+		{
+			ps.setInt(1, lvl);
+			ps.setString(2, name);
+			return ps.executeUpdate();
+		}
+		catch (SQLException e)
+		{
+			LOGGER.log(Level.WARNING, "Failed to update accesslevel for " + name + " -> " + lvl, e);
+			return 0;
+		}
+	}
+	
+	private static Integer parseInt(String s)
+	{
+		try
+		{
+			return Integer.parseInt(s);
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
+	
+	private static boolean showUsage(Player activeChar)
+	{
+		activeChar.sendMessage("Usage:");
+		activeChar.sendMessage("  //changelvl <new_level>                 (alvo deve ser um Player)");
+		activeChar.sendMessage("  //changelvl <player_name> <new_level>   (online ou offline)");
+		activeChar.sendMessage("Exemplos:");
+		activeChar.sendMessage("  //changelvl 7");
+		activeChar.sendMessage("  //changelvl Julio 0   (ban)");
+		return true;
 	}
 }

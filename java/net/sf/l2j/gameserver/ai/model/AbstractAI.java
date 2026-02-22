@@ -364,7 +364,6 @@ abstract class AbstractAI implements Ctrl
 	{
 	}
 	
-	
 	protected void moveToPawn(L2Object pawn, int offset)
 	{
 		if (_actor.isMovementDisabled())
@@ -382,123 +381,85 @@ abstract class AbstractAI implements Ctrl
 		boolean sendPacket = true;
 		
 		final int currentTick = GameTimeController.getInstance().getGameTicks();
-		final int timeoutTicks = 250 / GameTimeController.MILLIS_IN_TICK; // 250ms (mais responsivo)
-		final int geoTicks = 500 / GameTimeController.MILLIS_IN_TICK;     // 500ms (era 2s)
-		boolean onGeo = _actor.isOnGeodataPath();
-
+		final int timeoutTicks = 500 / GameTimeController.MILLIS_IN_TICK; // 500ms = 5 ticks
+		final int geoTicks = 2000 / GameTimeController.MILLIS_IN_TICK; // 2s = 20 ticks
+		
 		if (_clientMoving && _target == pawn)
 		{
-		    if (_clientMovingToPawnOffset == offset)
-		    {
-		        // Em geodata path: não segure demais, o cliente precisa de correções frequentes
-		        final int limit = onGeo ? geoTicks : timeoutTicks;
-
-		        if (currentTick < _moveToPawnTimeout + limit)
-		            return;
-
-		        // Se não for geodata, podemos economizar o pacote às vezes
-		        sendPacket = onGeo; // em geo manda sempre
-		    }
+			if (_clientMovingToPawnOffset == offset)
+			{
+				if (currentTick < _moveToPawnTimeout)
+					return;
+				
+				sendPacket = false;
+			}
+			else if (_actor.isOnGeodataPath())
+			{
+				if (currentTick < _moveToPawnTimeout + geoTicks)
+					return;
+			}
 		}
-
+		
 		_clientMoving = true;
 		_clientMovingToPawnOffset = offset;
 		_target = pawn;
+		
 		_moveToPawnTimeout = currentTick + timeoutTicks;
-
+		
+		if (pawn == null)
+			return;
+		
 		_actor.moveToLocation(pawn.getX(), pawn.getY(), pawn.getZ(), offset);
-
+		
 		if (!_actor.isMoving())
 		{
-		    clientActionFailed();
-		    return;
+			clientActionFailed();
+			return;
 		}
-
+		
 		if (pawn instanceof Creature)
 		{
-		    if (onGeo)
-		    {
-		        // Em geodata: sempre MoveToLocation (mais “natural” e estável)
-		        _actor.broadcastPacket(new MoveToLocation(_actor));
-		        _clientMovingToPawnOffset = 0;
-		    }
-		    else if (sendPacket)
-		    {
-		        _actor.broadcastPacket(new MoveToPawn(_actor, pawn, offset));
-		    }
+			if (_actor.isOnGeodataPath())
+			{
+				_actor.broadcastPacket(new MoveToLocation(_actor));
+				_clientMovingToPawnOffset = 0;
+			}
+			else if (sendPacket)
+			{
+				_actor.broadcastPacket(new MoveToPawn(_actor, pawn, offset));
+			}
 		}
 		else
 		{
-		    _actor.broadcastPacket(new MoveToLocation(_actor));
+			_actor.broadcastPacket(new MoveToLocation(_actor));
 		}
 	}
-	private int _moveToTimeout;
-	private int _moveToX;
-	private int _moveToY;
-	private int _moveToZ;
+	
 	protected void moveTo(int x, int y, int z)
 	{
-	    if (_actor == null)
-	        return;
-
-	    if (_actor.isMovementDisabled())
-	    {
-	        clientActionFailed();
-	        return;
-	    }
-
-	    final int currentTick = GameTimeController.getInstance().getGameTicks();
-
-	    // Ajustes parecidos com moveToPawn()
-	    final int timeoutTicks = 250 / GameTimeController.MILLIS_IN_TICK; // 250ms
-	    final int geoTicks     = 500 / GameTimeController.MILLIS_IN_TICK; // 500ms
-	    final boolean onGeo    = _actor.isOnGeodataPath();
-
-	    // Evita spam: se já está movendo e o destino é "quase igual", ignore
-	    // (reduz slide por micro-cliques)
-	    if (_clientMoving)
-	    {
-	        final int dx = x - _moveToX;
-	        final int dy = y - _moveToY;
-	        final int dz = z - _moveToZ;
-
-	        // tolerância em unidades do jogo
-	        final int samePos2D = 30;  // 30~60 é um bom range
-	        final int samePosZ  = 80;
-
-	        if ((Math.abs(dx) <= samePos2D) && (Math.abs(dy) <= samePos2D) && (Math.abs(dz) <= samePosZ))
-	        {
-	            // destino quase igual: respeita timeout
-	            final int limit = onGeo ? geoTicks : timeoutTicks;
-	            if (currentTick < _moveToTimeout + limit)
-	                return;
-	        }
-	        else
-	        {
-	            // destino mudou bastante: ainda assim evita flood extremo
-	            if (currentTick < _moveToTimeout + timeoutTicks)
-	                return;
-	        }
-	    }
-
-	    _clientMoving = true;
-	    _clientMovingToPawnOffset = 0;
-
-	    _moveToX = x;
-	    _moveToY = y;
-	    _moveToZ = z;
-	    _moveToTimeout = currentTick;
-
-	    _actor.moveToLocation(x, y, z, 0);
-
-	    if (!_actor.isMoving())
-	    {
-	        _actor.sendPacket(ActionFailed.STATIC_PACKET);
-	        return;
-	    }
-
-	    // Em geo, MoveToLocation é o mais consistente
-	    _actor.broadcastPacket(new MoveToLocation(_actor));
+		// Chek if actor can move
+		if (!_actor.isMovementDisabled())
+		{
+			// Set AI movement data
+			_clientMoving = true;
+			_clientMovingToPawnOffset = 0;
+			
+			if (_actor == null)// novo
+				return;
+			
+			// Calculate movement data for a move to location action and add the actor to movingObjects of GameTimeController
+			_actor.moveToLocation(x, y, z, 0);
+			if (!_actor.isMoving()) // evitar bug movimento
+			{
+				_actor.sendPacket(ActionFailed.STATIC_PACKET);
+				return;
+			}
+			// Send a Server->Client packet CharMoveToLocation to the actor and all L2PcInstance in its _knownPlayers
+			_actor.broadcastPacket(new MoveToLocation(_actor));
+			
+		}
+		else
+			clientActionFailed();
 	}
 	
 	/**

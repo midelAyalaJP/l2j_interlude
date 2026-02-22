@@ -19,10 +19,6 @@ import net.sf.l2j.gameserver.model.base.ClassRace;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 
-/**
- * Game Time controller class.
- * @author Forsaiken
- */
 public final class GameTimeController extends Thread
 {
 	protected static final Logger _log = Logger.getLogger(GameTimeController.class.getName());

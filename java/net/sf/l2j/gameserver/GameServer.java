@@ -89,6 +89,7 @@ import net.sf.l2j.gameserver.datatables.SummonItemsData;
 import net.sf.l2j.gameserver.datatables.TeleportLocationTable;
 import net.sf.l2j.gameserver.datatables.xml.DressMeData;
 import net.sf.l2j.gameserver.datatables.xml.FakePcsTable;
+import net.sf.l2j.gameserver.datatables.xml.GmData;
 import net.sf.l2j.gameserver.datatables.xml.HerbDropData;
 import net.sf.l2j.gameserver.datatables.xml.IconTable;
 import net.sf.l2j.gameserver.datatables.xml.MerchantData;
@@ -541,7 +542,7 @@ public class GameServer
 		{
 			_log.info("Tournament Event is disabled");
 		}
-		
+		GmData.getInstance();
 		MerchantData.getInstance();
 		StringUtil.printSection("Handlers");
 		_log.config("AutoSpawnHandler: Loaded " + AutoSpawnManager.getInstance().size() + " handlers.");

@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.ConnectionPool;
+import net.sf.l2j.gameserver.datatables.xml.IconTable;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.L2Object;
 import net.sf.l2j.gameserver.model.L2World;
@@ -268,7 +269,7 @@ public class ItemTable
 		_armors.clear();
 		_etcItems.clear();
 		_weapons.clear();
-		
+		IconTable.getInstance().reload();
 		load();
 	}
 	

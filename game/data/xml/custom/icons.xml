@@ -9176,4 +9176,17 @@
 	<icon itemId="9551" iconName="icon.etc_wit_symbol_i01" />
 	<icon itemId="9552" iconName="icon.etc_dex_symbol_i00" />
 
+	<icon itemId="9504" iconName="Ica_WFS_ICOns.weapon_icarus_heavy_arms_i00" />
+	<icon itemId="9507" iconName="Ica_WFS_ICOns.weapon_icarus_spiter_i00" />
+	<icon itemId="9510" iconName="Ica_WFS_ICOns.weapon_icarus_hammer_i00" />
+	<icon itemId="9514" iconName="Ica_WFS_ICOns.weapon_icarus_disperser_i00" />
+	<icon itemId="9520" iconName="Ica_WFS_ICOns.weapon_icarus_knuckle_i00" />
+	<icon itemId="9524" iconName="Ica_WFS_ICOns.weapon_icarus_sowsword_i00" />
+	<icon itemId="9526" iconName="Ica_WFS_ICOns.weapon_icarus_spirits_i00" />
+	<icon itemId="9530" iconName="Ica_WFS_ICOns.weapon_icarus_trident_i00" />
+	<icon itemId="9534" iconName="Ica_WFS_ICOns.weapon_icarus_stick_i00" />
+	<icon itemId="9537" iconName="icon.weapon_dual_sword_i00" />
+	
+
+
 </list>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list>
 
-		<item id="9507" type="Weapon" name="Draconic Bow - Focus">
+		<item id="9507" type="Weapon" name="Icarus Bow - Focus">
 		<set name="default_action" val="equip" />
 		<set name="weapon_type" val="BOW" />
 		<set name="bodypart" val="lrhand" />
