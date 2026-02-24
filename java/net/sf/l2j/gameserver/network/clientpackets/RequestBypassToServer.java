@@ -138,6 +138,13 @@ public final class RequestBypassToServer extends L2GameClientPacket
 		final Player activeChar = getClient().getActiveChar();
 		if (activeChar == null)
 			return;
+		
+		if (_command.startsWith("bbs_") || _command.startsWith("_bbs") || _command.startsWith("_friend") || _command.startsWith("_mail") || _command.startsWith("_block"))
+		{
+			CommunityBoard.getInstance().handleCommands(getClient(), _command);
+			return;
+		}
+		
 		if (!FloodProtectors.performAction(activeChar.getClient(), Action.SERVER_BYPASS))
 			return;
 		
@@ -1494,10 +1501,7 @@ public final class RequestBypassToServer extends L2GameClientPacket
 				if (object instanceof L2Npc)
 					((L2Npc) object).onBypassFeedback(activeChar, _command);
 			}
-			else if (_command.startsWith("bbs_") || _command.startsWith("_bbs") || _command.startsWith("_friend") || _command.startsWith("_mail") || _command.startsWith("_block"))
-			{
-				CommunityBoard.getInstance().handleCommands(getClient(), _command);
-			}
+		
 			else if (_command.startsWith("Quest "))
 			{
 				if (!activeChar.validateBypass(_command))

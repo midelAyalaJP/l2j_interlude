@@ -30,6 +30,7 @@ import net.sf.l2j.gameserver.datatables.xml.DressMeData;
 import net.sf.l2j.gameserver.datatables.xml.FakePcsTable;
 import net.sf.l2j.gameserver.datatables.xml.MerchantData;
 import net.sf.l2j.gameserver.datatables.xml.RouletteData;
+import net.sf.l2j.gameserver.datatables.xml.TalentData;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
 import net.sf.l2j.gameserver.instancemanager.CursedWeaponsManager;
 import net.sf.l2j.gameserver.instancemanager.ZoneManager;
@@ -199,6 +200,11 @@ public class AdminAdmin implements IAdminCommandHandler
 					{
 						AdminCommandAccessRights.getInstance().reload();
 						activeChar.sendMessage("Admin commands rights have been reloaded.");
+					}
+					else if (type.startsWith("talent"))
+					{
+						TalentData.getInstance().reload();
+						activeChar.sendMessage("The content of data/xml/custom/talentTrees alls .xml has been reloaded.");
 					}
 					else if (type.startsWith("dungeon"))
 					{

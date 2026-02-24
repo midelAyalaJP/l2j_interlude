@@ -54,8 +54,7 @@ public final class GameServerRegisterUI extends JFrame
 	private static final long serialVersionUID = 1L;
 	
 	// destinos finais (ajuste se sua estrutura for diferente)
-	private static final Path GAME_HEX_PATH = Paths.get("../game/config/hexid.txt").normalize();
-	private static final Path AUTH_HEX_PATH = Paths.get("../auth/config/hexid.txt").normalize();
+	private static final Path GAME_HEX_PATH = Paths.get("../game/config/other/hexid.txt").normalize();
 	
 	private final DefaultTableModel model = new DefaultTableModel(new Object[]
 	{
@@ -81,7 +80,7 @@ public final class GameServerRegisterUI extends JFrame
 	private final JButton btnClean = new JButton("Limpar ID selecionado");
 	private final JButton btnCleanAll = new JButton("Limpar TODOS");
 	private final JButton btnOpenGameConfig = new JButton("Abrir game/config");
-	private final JButton btnOpenAuthConfig = new JButton("Abrir auth/config");
+	
 	private final JButton btnClearLog = new JButton("Limpar log");
 	
 	private final JTextArea logArea = new JTextArea();
@@ -157,7 +156,7 @@ public final class GameServerRegisterUI extends JFrame
 		btnClean.addActionListener(e -> cleanSelected());
 		btnCleanAll.addActionListener(e -> cleanAll());
 		btnOpenGameConfig.addActionListener(e -> openFolderSafe(GAME_HEX_PATH.getParent()));
-		btnOpenAuthConfig.addActionListener(e -> openFolderSafe(AUTH_HEX_PATH.getParent()));
+		
 		btnClearLog.addActionListener(e -> logArea.setText(""));
 		
 		row1.add(btnRefresh);
@@ -165,13 +164,13 @@ public final class GameServerRegisterUI extends JFrame
 		row1.add(btnClean);
 		row1.add(btnCleanAll);
 		row1.add(btnOpenGameConfig);
-		row1.add(btnOpenAuthConfig);
+		
 		row1.add(btnClearLog);
 		
 		top.add(row1, BorderLayout.NORTH);
 		
 		lblOut.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-		lblOut.setText("Destino hexid: " + GAME_HEX_PATH.getParent() + " | " + AUTH_HEX_PATH.getParent());
+		lblOut.setText("Destino hexid: " + GAME_HEX_PATH.getParent() + " | ");
 		top.add(lblOut, BorderLayout.SOUTH);
 		
 		// ===== Center (table) =====
@@ -382,7 +381,7 @@ public final class GameServerRegisterUI extends JFrame
 			return;
 		}
 		
-		int opt = JOptionPane.showConfirmDialog(this, "Registrar o GameServer ID " + id + " (" + name + ")?\n\n" + "O sistema vai criar/atualizar automaticamente:\n" + "- " + GAME_HEX_PATH + "\n" + "- " + AUTH_HEX_PATH, "Confirmar registro", JOptionPane.YES_NO_OPTION);
+		int opt = JOptionPane.showConfirmDialog(this, "Registrar o GameServer ID " + id + " (" + name + ")?\n\n" + "O sistema vai criar/atualizar automaticamente:\n" + "- " + GAME_HEX_PATH + "\n" + "", "Confirmar registro", JOptionPane.YES_NO_OPTION);
 		
 		if (opt != JOptionPane.YES_OPTION)
 			return;
@@ -414,9 +413,6 @@ public final class GameServerRegisterUI extends JFrame
 					
 					writeHexidFile(GAME_HEX_PATH, hexStr, chosenId);
 					publish("OK. hexid.txt atualizado em: " + GAME_HEX_PATH.toAbsolutePath());
-					
-					writeHexidFile(AUTH_HEX_PATH, hexStr, chosenId);
-					publish("OK. hexid.txt atualizado em: " + AUTH_HEX_PATH.toAbsolutePath());
 					
 					publish("Registro finalizado com sucesso.");
 				}
@@ -733,7 +729,6 @@ public final class GameServerRegisterUI extends JFrame
 		btnClean.setEnabled(!on);
 		btnCleanAll.setEnabled(!on);
 		btnOpenGameConfig.setEnabled(!on);
-		btnOpenAuthConfig.setEnabled(!on);
 		btnClearLog.setEnabled(!on);
 		table.setEnabled(!on);
 	}

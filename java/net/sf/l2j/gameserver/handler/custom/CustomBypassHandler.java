@@ -6,13 +6,6 @@ import java.util.Map;
 import net.sf.l2j.gameserver.handler.ICustomByPassHandler;
 import net.sf.l2j.gameserver.model.actor.Player;
 
-/**
- * This 'Bypass Handler' is a handy tool indeed!<br>
- * Basically, you can send any custom bypass commmands to it from ANY npc and it will call the appropriate function.<br>
- * <strong>Example:</strong><br>
- * <button value=" Request Rebirth " action="bypass -h custom_rebirth_confirmrequest" width=110 height=36 back="L2UI_ct1.button_df" fore="L2UI_ct1.button_df">
- * @author JStar
- */
 public class CustomBypassHandler
 {
 private static CustomBypassHandler _instance = null;

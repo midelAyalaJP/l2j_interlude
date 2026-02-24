@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<list>
+
+    <!-- =========================
+         TREE 1: POWER (0/30)
+         ========================= -->
+    <tree id="POWER" maxPoints="6">
+
+        <tier level="1" requiredPoints="1">
+            <!-- 3 skills, cada uma upa até 10 (igual 0/10 do Tier) -->
+            <skill id="1040" maxLevel="1"/>
+            <skill id="1389" maxLevel="1"/>
+            <skill id="1068" maxLevel="1"/>
+
+        </tier>
+
+        <tier level="2" requiredPoints="1">
+            <skill id="1045" maxLevel="1"/>
+            <skill id="1048" maxLevel="1"/>
+            <skill id="1077" maxLevel="1"/>
+
+        </tier>
+
+        <tier level="3" requiredPoints="1">
+            <skill id="1268" maxLevel="1"/>
+            <skill id="1059" maxLevel="1"/>
+            <skill id="1204" maxLevel="1"/>
+
+
+        </tier>
+
+    </tree>
+
+
+    <!-- =========================
+         TREE 2: MASTERY_A (0/30)
+         ========================= -->
+    <tree id="MASTERY_A" maxPoints="30">
+
+        <tier level="1" requiredPoints="1">
+            <skill id="1087" maxLevel="10"/>
+            <skill id="264" maxLevel="10"/>
+            <skill id="265" maxLevel="10"/>
+
+        </tier>
+
+        <tier level="2" requiredPoints="0">
+            <skill id="269" maxLevel="10"/>
+            <skill id="270" maxLevel="10"/>
+            <skill id="304" maxLevel="10"/>
+
+        </tier>
+
+        <tier level="3" requiredPoints="0">
+            <skill id="363" maxLevel="10"/>
+            <skill id="364" maxLevel="10"/>
+            <skill id="349" maxLevel="10"/>
+
+        </tier>
+
+    </tree>
+
+
+    <!-- =========================
+         TREE 3: MASTERY_B (0/30)
+         ========================= -->
+    <tree id="MASTERY_B" maxPoints="5">
+
+        <tier level="1" requiredPoints="0">
+            <skill id="272" maxLevel="10"/>
+            <skill id="276" maxLevel="10"/>
+            <skill id="273" maxLevel="10"/>
+
+        </tier>
+
+        <tier level="2" requiredPoints="0">
+            <skill id="309" maxLevel="10"/>
+            <skill id="310" maxLevel="10"/>
+            <skill id="311" maxLevel="10"/>
+
+        </tier>
+
+        <tier level="3" requiredPoints="0">
+            <skill id="1007" maxLevel="10"/>
+            <skill id="1009" maxLevel="10"/>
+            <skill id="1002" maxLevel="10"/>
+
+       </tier>
+
+    </tree>
+
+</list>

@@ -39,6 +39,7 @@ import net.sf.l2j.gameserver.handler.voicedcommandhandlers.VoicedRankingCustom;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.VoicedRemovedBanChat;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.VoicedReport;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.VoicedStatus;
+import net.sf.l2j.gameserver.handler.voicedcommandhandlers.VoicedTalent;
 import net.sf.l2j.mission.VoicedMission;
 import net.sf.l2j.sellbuff.SellBuffsCommand;
 
@@ -54,6 +55,7 @@ public class VoicedCommandHandler
 	protected VoicedCommandHandler()
 	{
 		registerHandler(new VoicedStatus());
+		registerHandler(new VoicedTalent());
 		//Codigos para colocar aqui dentro	
 		if(Config.CHAT_BAN_HTML)
 		{

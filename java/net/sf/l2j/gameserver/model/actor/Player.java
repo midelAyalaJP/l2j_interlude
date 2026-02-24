@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +75,8 @@ import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.datatables.SkillTable.FrequentSkill;
 import net.sf.l2j.gameserver.datatables.SkillTreeTable;
 import net.sf.l2j.gameserver.datatables.xml.DressMeData;
+import net.sf.l2j.gameserver.datatables.xml.TalentData;
+import net.sf.l2j.gameserver.datatables.xml.TalentTreeHolder;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.handler.IItemHandler;
 import net.sf.l2j.gameserver.handler.ItemHandler;
@@ -117,6 +121,7 @@ import net.sf.l2j.gameserver.model.PetDataEntry;
 import net.sf.l2j.gameserver.model.ShortCuts;
 import net.sf.l2j.gameserver.model.ShotType;
 import net.sf.l2j.gameserver.model.SpawnLocation;
+import net.sf.l2j.gameserver.model.TalentMemoService;
 import net.sf.l2j.gameserver.model.actor.appearance.PcAppearance;
 import net.sf.l2j.gameserver.model.actor.instance.L2AgathionInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2ChestInstance;
@@ -152,6 +157,7 @@ import net.sf.l2j.gameserver.model.entity.Siege;
 import net.sf.l2j.gameserver.model.holder.DressMeHolder;
 import net.sf.l2j.gameserver.model.holder.IntIntHolder;
 import net.sf.l2j.gameserver.model.holder.SkillUseHolder;
+import net.sf.l2j.gameserver.model.holder.TalentSkillHolder;
 import net.sf.l2j.gameserver.model.item.Henna;
 import net.sf.l2j.gameserver.model.item.RecipeList;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
@@ -2458,9 +2464,7 @@ public class Player extends Playable
 		if (sendMessage)
 			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.EARNED_S1_ADENA).addNumber(count));
 		
-		/*
-		 * if (count > 0) { _inventory.addAdena(process, count, this, reference); InventoryUpdate iu = new InventoryUpdate(); iu.addItem(_inventory.getAdenaInstance()); sendPacket(iu); }
-		 */
+
 		if (count > 0)
 		{
 			_inventory.addAdena(process, count, this, reference);
@@ -9357,7 +9361,7 @@ public class Player extends Playable
 		
 		if (isCursedWeaponEquipped())
 			CursedWeaponsManager.getInstance().getCursedWeapon(getCursedWeaponEquippedId()).cursedOnLogin();
-		
+		TalentMemoService.load(this);;
 		// Add to the GameTimeTask to keep inform about activity time.
 		TakeBreakTaskManager.getInstance().add(this);
 		
@@ -9378,7 +9382,6 @@ public class Player extends Playable
 				setIsIn7sDungeon(false);
 			}
 		}
-		
 		// Jail task
 		updatePunishState();
 		
@@ -14418,5 +14421,192 @@ public class Player extends Playable
 	{
 		_dungeon = dungeon;
 	}
+	// Dentro da classe Player
 	
+	private final Map<String, Map<Integer, Integer>> _talents = new HashMap<>();
+	private final Map<String, Integer> _talentSpentCache = new HashMap<>();
+	private final Map<String, Integer> _talentAvailablePoints = new HashMap<>();
+	private final Set<String> _talentsLoaded = new HashSet<>();
+	
+	private void ensureTalentsLoaded(String treeId)
+	{
+		if (treeId == null || treeId.isEmpty())
+			return;
+		
+		if (_talentsLoaded.contains(treeId))
+			return;
+		
+		int points = TalentMemoService.getMemoPoints(this, treeId); // <-- implemente/ajuste
+		Map<Integer, Integer> learned = TalentMemoService.getMemoTalents(this, treeId);
+		learned = (learned == null) ? new HashMap<>() : new HashMap<>(learned);
+
+		
+		
+		_talentAvailablePoints.put(treeId, Math.max(0, points));
+		_talents.put(treeId, learned);
+		
+		_talentSpentCache.remove(treeId);
+		_talentsLoaded.add(treeId);
+	}
+	
+	public Map<Integer, Integer> getTalents(String treeId)
+	{
+		if (treeId == null)
+			return Collections.emptyMap();
+		
+		ensureTalentsLoaded(treeId);
+		return _talents.computeIfAbsent(treeId, k -> new HashMap<>());
+	}
+	
+	public int getTalentLevel(String treeId, int skillId)
+	{
+		if (treeId == null)
+			return 0;
+		
+		ensureTalentsLoaded(treeId);
+		
+		final Map<Integer, Integer> map = _talents.get(treeId);
+		if (map == null)
+			return 0;
+		
+		return map.getOrDefault(skillId, 0);
+	}
+	
+	public int getTalentAvailablePoints(String treeId)
+	{
+		if (treeId == null)
+			return 0;
+		
+		ensureTalentsLoaded(treeId);
+		return _talentAvailablePoints.getOrDefault(treeId, 0);
+	}
+	
+	public int getTalentSpentPoints(String treeId)
+	{
+		if (treeId == null)
+			return 0;
+		
+		ensureTalentsLoaded(treeId);
+		
+		final Integer cached = _talentSpentCache.get(treeId);
+		if (cached != null)
+			return cached;
+		
+		final Map<Integer, Integer> learned = _talents.get(treeId);
+		int spent = 0;
+		if (learned != null)
+		{
+			for (int lvl : learned.values())
+				spent += Math.max(0, lvl);
+		}
+		
+		_talentSpentCache.put(treeId, spent);
+		return spent;
+	}
+	
+	public void addTalentPoints(String treeId, int amount)
+	{
+		if (treeId == null || amount <= 0)
+			return;
+		
+		ensureTalentsLoaded(treeId);
+		
+		final int newValue = _talentAvailablePoints.merge(treeId, amount, Integer::sum);
+		TalentMemoService.savePoints(this, treeId, newValue);
+	}
+	
+	public void setTalentPoints(String treeId, int amount)
+	{
+		if (treeId == null)
+			return;
+		
+		ensureTalentsLoaded(treeId);
+		
+		final int v = Math.max(0, amount);
+		_talentAvailablePoints.put(treeId, v);
+		TalentMemoService.savePoints(this, treeId, v);
+	}
+	
+	public boolean learnTalent(String treeId, int skillId, int requestedLevel)
+	{
+	    if (treeId == null || treeId.isEmpty() || skillId <= 0)
+	        return talentFail("bad args treeId=" + treeId + " skillId=" + skillId);
+
+	    // trava por player pra evitar double click gastar 2x ou bugar cache
+	    synchronized (this)
+	    {
+	        ensureTalentsLoaded(treeId);
+
+	        final TalentTreeHolder tree = TalentData.getInstance().getTree(treeId);
+	        if (tree == null)
+	            return talentFail("tree not found: " + treeId);
+
+	        final TalentSkillHolder holder = tree.findSkill(skillId);
+	        if (holder == null)
+	        	return false;
+
+	        final int maxLvl = holder.getMaxLevel();
+	        if (maxLvl <= 0)
+	        	return false;
+
+	        final Map<Integer, Integer> learned = getTalents(treeId); // map mutável
+	        final int currentLevel = learned.getOrDefault(skillId, 0);
+
+	        if (currentLevel >= maxLvl)
+	        	return false;
+
+	        // Sempre compra +1 (level por level)
+	        final int newLevel = currentLevel + 1;
+	        
+	        if (requestedLevel > 0 && requestedLevel != newLevel)
+	        	return false;
+
+	        final int available = getTalentAvailablePoints(treeId);
+	        if (available <= 0)
+	            return false;
+
+	        final int spent = getTalentSpentPoints(treeId);
+	        final int maxPoints = tree.getMaxPoints();
+	        if (maxPoints > 0 && spent >= maxPoints)
+	        	return false;
+	        final int tier = holder.getTier();
+	        int req = tree.getRequiredPointsForTier(tier);
+
+	        // regra correta: Tier 1 sempre 0, senão trava
+	        if (tier <= 1) req = 0;
+
+	        if (spent < req)
+	        	return false;
+	        // ===== APPLY (commit) =====
+	        learned.put(skillId, newLevel);
+
+	        // invalida cache spent e atualiza available
+	        _talentSpentCache.remove(treeId);
+
+	        final int newAvailable = available - 1;
+	        _talentAvailablePoints.put(treeId, newAvailable);
+
+	        // Persist (DB + cache global do MemoService)
+	        TalentMemoService.save(this, treeId, skillId, newLevel);
+	        TalentMemoService.savePoints(this, treeId, newAvailable);
+
+	        // Dá a skill real no char
+	        final L2Skill sk = SkillTable.getInstance().getInfo(skillId, newLevel);
+	        if (sk != null)
+	        {
+	            addSkill(sk, false);
+	            sendSkillList();
+	        }
+
+	        
+
+	        return true;
+	    }
+	}
+	
+	private boolean talentFail(String msg)
+	{
+		sendMessage("[TALENT] " + msg);
+		return false;
+	}
 }

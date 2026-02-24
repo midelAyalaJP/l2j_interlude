@@ -20,9 +20,9 @@ import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.actor.Attackable;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.L2Npc;
+import net.sf.l2j.gameserver.model.actor.L2Summon;
 import net.sf.l2j.gameserver.model.actor.Playable;
 import net.sf.l2j.gameserver.model.actor.Player;
-import net.sf.l2j.gameserver.model.actor.L2Summon;
 import net.sf.l2j.gameserver.model.actor.instance.L2ArtefactInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2ChestInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2CubicInstance;
@@ -2631,4 +2631,9 @@ public abstract class L2Skill implements IChanceSkillTrigger
 	{
 		_hitTime = value;
 	}
+
+	public String getIcon()
+{
+	return (getId() < 10) ? "icon.skill000" + getId() : (getId() < 100) ? "icon.skill00" + getId() : (getId() < 1000) ? "icon.skill0" + getId() : "icon.skill" + getId();
+}
 }

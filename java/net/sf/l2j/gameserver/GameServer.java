@@ -94,6 +94,7 @@ import net.sf.l2j.gameserver.datatables.xml.HerbDropData;
 import net.sf.l2j.gameserver.datatables.xml.IconTable;
 import net.sf.l2j.gameserver.datatables.xml.MerchantData;
 import net.sf.l2j.gameserver.datatables.xml.RouletteData;
+import net.sf.l2j.gameserver.datatables.xml.TalentData;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.handler.AdminCommandHandler;
 import net.sf.l2j.gameserver.handler.BypassHandler;
@@ -386,6 +387,7 @@ public class GameServer
 		DressMeData.getInstance();
 		
 		StringUtil.printSection("Custom World");
+		TalentData.getInstance();
 		IPManager.getInstance();
 		RouletteData.getInstance();
 		DressMeData.getInstance();
