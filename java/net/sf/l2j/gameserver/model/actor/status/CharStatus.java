@@ -11,6 +11,7 @@ import net.sf.l2j.gameserver.ThreadPool;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.actor.stat.CharStat;
+import net.sf.l2j.gameserver.network.serverpackets.UserInfo;
 import net.sf.l2j.gameserver.skills.Formulas;
 
 public class CharStatus
@@ -189,36 +190,50 @@ public class CharStatus
 	
 	public void setCurrentHp(double newHp, boolean broadcastPacket)
 	{
-		final double maxHp = getActiveChar().getMaxHp();
-		
-		synchronized (this)
-		{
-			if (getActiveChar().isDead())
-				return;
-			
-			if (newHp >= maxHp)
-			{
-				// Set the RegenActive flag to false
-				_currentHp = maxHp;
-				_flagsRegenActive &= ~REGEN_FLAG_HP;
-				
-				// Stop the HP/MP/CP Regeneration task
-				if (_flagsRegenActive == 0)
-					stopHpMpRegeneration();
-			}
-			else
-			{
-				// Set the RegenActive flag to true
-				_currentHp = newHp;
-				_flagsRegenActive |= REGEN_FLAG_HP;
-				
-				// Start the HP/MP/CP Regeneration task with Medium priority
-				startHpMpRegeneration();
-			}
-		}
-		
-		if (broadcastPacket)
-			getActiveChar().broadcastStatusUpdate();
+	    final Creature cha = getActiveChar();
+	    final double maxHp = cha.getMaxHp();
+
+	    double oldRatio;
+	    double newRatio;
+
+	    synchronized (this)
+	    {
+	        if (cha.isDead())
+	            return;
+
+	        oldRatio = _currentHp / maxHp;
+
+	        if (newHp >= maxHp)
+	        {
+	            _currentHp = maxHp;
+	            _flagsRegenActive &= ~REGEN_FLAG_HP;
+
+	            if (_flagsRegenActive == 0)
+	                stopHpMpRegeneration();
+	        }
+	        else
+	        {
+	            _currentHp = newHp;
+	            _flagsRegenActive |= REGEN_FLAG_HP;
+	            startHpMpRegeneration();
+	        }
+
+	        newRatio = _currentHp / maxHp;
+	    }
+
+	    // SE MUDOU HP%, REAPLICA PASSIVAS
+	    if (cha instanceof Player)
+	    {
+	        final int oldPct = (int) (oldRatio * 100);
+	        final int newPct = (int) (newRatio * 100);
+
+	        if (oldPct != newPct)
+	            ((Player) cha).sendPacket(new UserInfo((Player) cha));
+	    }
+
+
+	    if (broadcastPacket)
+	        cha.broadcastStatusUpdate();
 	}
 	
 	public final void setCurrentHpMp(double newHp, double newMp)
