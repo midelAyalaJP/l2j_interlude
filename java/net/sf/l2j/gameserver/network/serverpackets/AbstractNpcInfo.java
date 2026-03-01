@@ -74,7 +74,6 @@ public abstract class AbstractNpcInfo extends L2GameServerPacket
 				_collisionRadius = _npc.getCollisionRadius();
 			}
 			
- 
 			if (_npc.getTemplate().isUsingServerSideName())
 				_name = _npc.getName();
 			
@@ -84,12 +83,21 @@ public abstract class AbstractNpcInfo extends L2GameServerPacket
 			}
 			else
 			{
-				_title = _npc.getTemplate().isUsingServerSideTitle() ? _npc.getTitle() : _npc.getTemplate().getTitle();
-				if (_title == null)
-					_title = "";
+				if (cha.getTemplate().isUsingServerSideTitle())
+				{
+					_title = cha.getTemplate().getTitle();
+				}
 				
-				if (Config.SHOW_NPC_LVL && _npc instanceof L2MonsterInstance)
-					_title = "Lv " + _npc.getLevel() + (_npc.getTemplate().getAggroRange() > 0 ? "* " : " ") + _title;
+				if (Config.SHOW_NPC_LVL && (cha instanceof L2MonsterInstance))
+				{
+					String t = "Lv " + _npc.getLevel() + (_npc.getTemplate().getAggroRange() > 0 ? "*" : "");
+					if (_title != null)
+					{
+						t += " " + _title;
+					}
+					_title = t;
+				}
+				
 			}
 			// NPC crest system
 			if (Config.SHOW_NPC_CREST && _npc.getCastle() != null && _npc.getCastle().getOwnerId() != 0)
