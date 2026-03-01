@@ -2118,7 +2118,7 @@ public abstract class Creature extends L2Object
 		if (value == null)
 			_title = "";
 		else
-			_title = value.length() > 16 ? value.substring(0, 15) : value;
+			_title = value.length() > 25 ? value.substring(0, 23) : value;
 	}
 	
 	/** Set the L2Character movement type to walk and send Server->Client packet ChangeMoveType to all others L2PcInstance. */

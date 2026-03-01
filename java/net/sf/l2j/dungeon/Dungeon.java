@@ -115,7 +115,10 @@ public class Dungeon
 					Location loc = new Location(x, y, z);
 					
 					spawns.setLoc(loc.getX(), loc.getY(), loc.getZ(), 0);
-					
+					if(spawn._respawnDelay != 0)
+					{
+						spawns.setRespawnDelay(1000 * 60 * spawn._respawnDelay);
+					}
 					spawns.doSpawn(false);
 					((L2MonsterInstance) spawns.getNpc()).setDungeon(this);
 					spawns.getNpc().setInstance(_instance, false);

@@ -18,7 +18,7 @@
 		
 		<stage order="1" loc="112804,-76675,8" teleport="true" minutes="10"/>
 		<spawns stage="1">
-			<spawn npcId="500" title="[Dungeon Monster]" count="1" range="75" loc="113999,-76601,56" drops="4037-1-1-500000;" />
+			<spawn npcId="500" title="[Dungeon Monster]" count="1" respawnDelay="60" range="75" loc="113999,-76601,56" drops="4037-1-1-500000;" />
 			<spawn npcId="501" title="[Dungeon Monster]" count="1" range="75" loc="113937,-75940,56" drops="4037-1-1-500000;" />
 			<spawn npcId="502" title="[Dungeon Monster]" count="1" range="75" loc="113251,-75299,56" drops="4037-1-1-500000;" />
 			<spawn npcId="500" title="[Dungeon Monster]" count="1" range="75" loc="112240,-75345,56" drops="4037-1-1-500000;" />

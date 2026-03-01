@@ -163,6 +163,7 @@ public class DungeonData implements IXmlReader
 						final NamedNodeMap spawnAttrs = spawnNode.getAttributes();
 						final int npcId = parseInteger(spawnAttrs, "npcId", 0);
 						final String title = parseString(spawnAttrs, "title", "");
+						final int respawnDelay = parseInteger(spawnAttrs, "respawnDelay", 0);
 						final int count = parseInteger(spawnAttrs, "count", 1);
 						final int range = parseInteger(spawnAttrs, "range", 0);
 						final String[] loc = parseString(spawnAttrs, "loc", "0,0,0").split(",");
@@ -171,7 +172,7 @@ public class DungeonData implements IXmlReader
 						final int z = Integer.parseInt(loc[2]);
 						final String drops = parseString(spawnAttrs, "drops", null);
 						
-						spawns.add(new SpawnTemplate(npcId, title, count, range, x, y, z, drops));
+						spawns.add(new SpawnTemplate(npcId, title, respawnDelay, count, range, x, y, z, drops));
 					});
 					
 					stageSpawns.put(stageId, spawns);

@@ -4,16 +4,18 @@ public class SpawnTemplate
 {
 	public final int _npcId;
 	public final String _title;
+	public final int _respawnDelay;
 	public final int _count;
 	public final int _range;
 	public final int _x, _y, _z;
 	
 	public final String _drops;
 	
-	public SpawnTemplate(int npcId, String title, int count, int range, int x, int y, int z, String drops)
+	public SpawnTemplate(int npcId, String title, int respawnDelay, int count, int range, int x, int y, int z, String drops)
 	{
 		_npcId = npcId;
 		_title = title;
+		_respawnDelay = respawnDelay;
 		_count = count;
 		_range = range;
 		_x = x;
