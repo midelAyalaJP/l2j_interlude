@@ -18,6 +18,7 @@ import net.sf.l2j.mods.engine.FakePlayerRestoreQueue;
 import net.sf.l2j.mods.holder.FakeItem;
 import net.sf.l2j.mods.holder.FakeTemplate;
 import net.sf.l2j.mods.manager.FakePlayerManager;
+import net.sf.l2j.mods.manager.PhantomHennaManager;
 
  
 public final class FakePlayerFactory
@@ -114,7 +115,7 @@ public final class FakePlayerFactory
 		// SPAWN REAL
 		// ===============================
 		fake.setXYZInvisible(x, y, z);
-		
+		PhantomHennaManager.applySymbols(fake);
 		fake.setOnlineStatus(true, false);
 		fake.deleteMe();
 		if (FakePlayerManager.getInstance().getPlayer(objectId) == null)

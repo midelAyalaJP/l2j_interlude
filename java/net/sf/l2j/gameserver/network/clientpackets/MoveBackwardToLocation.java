@@ -10,9 +10,11 @@ import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.EnchantResult;
 import net.sf.l2j.gameserver.network.serverpackets.StopMove;
+import net.sf.l2j.gameserver.util.Util;
 
 public class MoveBackwardToLocation extends L2GameClientPacket
 {
+	
 	private int _targetX;
 	private int _targetY;
 	private int _targetZ;
@@ -95,6 +97,15 @@ public class MoveBackwardToLocation extends L2GameClientPacket
 			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
+		// Check async range.
+		dx = _originX - activeChar.getX();
+		dy = _originY - activeChar.getY();
+		double dz1 = _originZ - activeChar.getZ();
+		float diff = (float) Math.sqrt(dx * dx + dy * dy + dz1 * dz1);
+		int heading = Util.calculateHeadingFrom(_originX, _originY, activeChar.getX(), activeChar.getY());
+		if (Math.abs(activeChar.getHeading() - heading) > 16000)
+			diff = diff * -1;
+		
 		activeChar.getAI().setIntention(CtrlIntention.MOVE_TO, new Location(_targetX, _targetY, _targetZ));
 	}
 }

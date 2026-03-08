@@ -79,25 +79,23 @@ public abstract class AbstractNpcInfo extends L2GameServerPacket
 			
 			if (_npc.getInstance() != null)
 			{
-				_title = _npc.getTitle();
+			    if (_npc.getTemplate().isUsingServerSideTitle())
+			        _title = _npc.getTitle();
 			}
 			else
 			{
-				if (cha.getTemplate().isUsingServerSideTitle())
-				{
-					_title = cha.getTemplate().getTitle();
-				}
-				
-				if (Config.SHOW_NPC_LVL && (cha instanceof L2MonsterInstance))
-				{
-					String t = "Lv " + _npc.getLevel() + (_npc.getTemplate().getAggroRange() > 0 ? "*" : "");
-					if (_title != null)
-					{
-						t += " " + _title;
-					}
-					_title = t;
-				}
-				
+			    if (cha.getTemplate().isUsingServerSideTitle())
+			        _title = cha.getTemplate().getTitle();
+
+			    if (Config.SHOW_NPC_LVL && (cha instanceof L2MonsterInstance))
+			    {
+			        String t = "Lv " + _npc.getLevel() + (_npc.getTemplate().getAggroRange() > 0 ? "*" : "");
+
+			        if (_title != null)
+			            t += " " + _title;
+
+			        _title = t;
+			    }
 			}
 			// NPC crest system
 			if (Config.SHOW_NPC_CREST && _npc.getCastle() != null && _npc.getCastle().getOwnerId() != 0)

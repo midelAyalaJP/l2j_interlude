@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gmList>
     <!-- enabled=true => permitido / enabled=false => remove e pune -->
-    <gm objectId="268480281" name="BAN" accessLevel="1" enabled="true" />
+    <gm objectId="268480247" name="BAN" accessLevel="1" enabled="true" />
 
     <!-- exemplo: desativado (se estiver online, cai e pune; se offline, zera DB) -->
     <gm objectId="40000" name="ExGM" accessLevel="1" enabled="false" />

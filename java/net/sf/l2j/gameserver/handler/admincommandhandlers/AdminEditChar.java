@@ -21,8 +21,8 @@ import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
 import net.sf.l2j.gameserver.model.L2Clan;
 import net.sf.l2j.gameserver.model.L2Object;
 import net.sf.l2j.gameserver.model.L2World;
-import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.actor.L2Summon;
+import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.actor.instance.L2PetInstance;
 import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.model.base.Sex;
@@ -32,6 +32,7 @@ import net.sf.l2j.gameserver.network.serverpackets.GMViewItemList;
 import net.sf.l2j.gameserver.network.serverpackets.HennaInfo;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.util.Util;
+import net.sf.l2j.mods.manager.FakePlayerManager;
 
 public class AdminEditChar implements IAdminCommandHandler
 {
@@ -203,7 +204,7 @@ public class AdminEditChar implements IAdminCommandHandler
 				for (ClassId classid : ClassId.VALUES)
 					if (classidval == classid.getId())
 						valid = true;
-				
+					
 				if (valid && (player.getClassId().getId() != classidval))
 				{
 					player.setClassId(classidval);
@@ -311,14 +312,13 @@ public class AdminEditChar implements IAdminCommandHandler
 				player.decayMe();
 				player.spawnMe();
 			}
-			else
-				if (activeChar.getAppearance().getSex() == Sex.MALE)
-					player.getAppearance().setSex(Sex.FEMALE);
-					player.broadcastUserInfo();
-					player.decayMe();
-					player.spawnMe();
-					player.sendMessage("Your gender has been changed to Sexy Female by a GM ");
-					
+			else if (activeChar.getAppearance().getSex() == Sex.MALE)
+				player.getAppearance().setSex(Sex.FEMALE);
+			player.broadcastUserInfo();
+			player.decayMe();
+			player.spawnMe();
+			player.sendMessage("Your gender has been changed to Sexy Female by a GM ");
+			
 		}
 		else if (command.startsWith("admin_setcolor"))
 		{
@@ -462,12 +462,12 @@ public class AdminEditChar implements IAdminCommandHandler
 			{
 				Player player = (Player) target;
 				
-			    if (player.isInParty())
-			        gatherPartyInfo(player, activeChar);
-			    else
-			        activeChar.sendMessage(player.getName() + " isn't in a party.");
+				if (player.isInParty())
+					gatherPartyInfo(player, activeChar);
+				else
+					activeChar.sendMessage(player.getName() + " isn't in a party.");
 			}
-
+			
 			else
 				activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
 		}
@@ -554,7 +554,15 @@ public class AdminEditChar implements IAdminCommandHandler
 	
 	private static void listCharacters(Player activeChar, int page)
 	{
-		List<Player> players = new ArrayList<>(L2World.getInstance().getPlayers());
+		List<Player> players = new ArrayList<>();
+		
+		for (Player player : L2World.getInstance().getPlayers())
+		{
+			if (FakePlayerManager.getInstance().getPlayer(player.getObjectId()) != null)
+				continue;
+			
+			players.add(player);
+		}
 		
 		final int max = MathUtil.countPagesNumber(players.size(), PAGE_LIMIT);
 		
@@ -565,23 +573,26 @@ public class AdminEditChar implements IAdminCommandHandler
 		
 		final StringBuilder sb = new StringBuilder(players.size() * 200);
 		
-		// First use of sb.
+		// Pages
 		for (int x = 0; x < max; x++)
 		{
 			final int pagenr = x + 1;
+			
 			if (page == pagenr)
 				StringUtil.append(sb, pagenr, "&nbsp;");
 			else
 				StringUtil.append(sb, "<a action=\"bypass -h admin_show_characters ", pagenr, "\">", pagenr, "</a>&nbsp;");
 		}
+		
 		html.replace("%pages%", sb.toString());
 		
-		// Cleanup current sb.
 		sb.setLength(0);
 		
-		// Second use of sb, add player info into new table row.
+		// Players
 		for (Player player : players)
+		{
 			StringUtil.append(sb, "<tr><td width=80><a action=\"bypass -h admin_character_info ", player.getName(), "\">", player.getName(), "</a></td><td width=110>", player.getTemplate().getClassName(), "</td><td width=40>", player.getLevel(), "</td></tr>");
+		}
 		
 		html.replace("%players%", sb.toString());
 		activeChar.sendPacket(html);
@@ -703,6 +714,11 @@ public class AdminEditChar implements IAdminCommandHandler
 		// First use of sb, add player info into new Table row
 		for (Player player : L2World.getInstance().getPlayers())
 		{
+			if (FakePlayerManager.getInstance().getPlayer(player.getObjectId()) != null)
+			{
+				continue;
+			}
+			
 			String name = player.getName();
 			if (name.toLowerCase().contains(characterToFind.toLowerCase()))
 			{
@@ -839,57 +855,55 @@ public class AdminEditChar implements IAdminCommandHandler
 	 * @param activeChar
 	 * @param multibox
 	 */
-//	private static void findDualbox(L2PcInstance activeChar, int multibox)
-//	{
-//		Map<String, List<L2PcInstance>> ipMap = new HashMap<>();
-//		
-//		String ip = "0.0.0.0";
-//		
-//		final Map<String, Integer> dualboxIPs = new HashMap<>();
-//		
-//		for (L2PcInstance player : L2World.getInstance().getPlayers())
-//		{
-//			L2GameClient client = player.getClient();
-//			if (client == null || client.isDetached())
-//				continue;
-//			
-//			ip = client.getConnection().getInetAddress().getHostAddress();
-//			if (ipMap.get(ip) == null)
-//				ipMap.put(ip, new ArrayList<L2PcInstance>());
-//			
-//			ipMap.get(ip).add(player);
-//			
-//			if (ipMap.get(ip).size() >= multibox)
-//			{
-//				Integer count = dualboxIPs.get(ip);
-//				if (count == null)
-//					dualboxIPs.put(ip, multibox);
-//				else
-//					dualboxIPs.put(ip, count++);
-//			}
-//		}
+	// private static void findDualbox(L2PcInstance activeChar, int multibox)
+	// {
+	// Map<String, List<L2PcInstance>> ipMap = new HashMap<>();
+	//
+	// String ip = "0.0.0.0";
+	//
+	// final Map<String, Integer> dualboxIPs = new HashMap<>();
+	//
+	// for (L2PcInstance player : L2World.getInstance().getPlayers())
+	// {
+	// L2GameClient client = player.getClient();
+	// if (client == null || client.isDetached())
+	// continue;
+	//
+	// ip = client.getConnection().getInetAddress().getHostAddress();
+	// if (ipMap.get(ip) == null)
+	// ipMap.put(ip, new ArrayList<L2PcInstance>());
+	//
+	// ipMap.get(ip).add(player);
+	//
+	// if (ipMap.get(ip).size() >= multibox)
+	// {
+	// Integer count = dualboxIPs.get(ip);
+	// if (count == null)
+	// dualboxIPs.put(ip, multibox);
+	// else
+	// dualboxIPs.put(ip, count++);
+	// }
+	// }
 	private static void findDualbox(Player activeChar, int multibox)
 	{
-	    Map<String, List<Player>> ipMap = new HashMap<>();
-	    Map<String, Integer> dualboxIPs = new HashMap<>();
-
-	    for (Player player : L2World.getInstance().getPlayers())
-	    {
-	        L2GameClient client = player.getClient();
-	        if (client == null || client.isDetached())
-	            continue;
-
-	        String ip = client.getConnection().getInetAddress().getHostAddress();
-
-	        ipMap.computeIfAbsent(ip, k -> new ArrayList<>()).add(player);
-
-	        if (ipMap.get(ip).size() >= multibox)
-	        {
-	            dualboxIPs.put(ip, dualboxIPs.getOrDefault(ip, 0) + 1);
-	        }
-	    }
-	
-
+		Map<String, List<Player>> ipMap = new HashMap<>();
+		Map<String, Integer> dualboxIPs = new HashMap<>();
+		
+		for (Player player : L2World.getInstance().getPlayers())
+		{
+			L2GameClient client = player.getClient();
+			if (client == null || client.isDetached())
+				continue;
+			
+			String ip = client.getConnection().getInetAddress().getHostAddress();
+			
+			ipMap.computeIfAbsent(ip, k -> new ArrayList<>()).add(player);
+			
+			if (ipMap.get(ip).size() >= multibox)
+			{
+				dualboxIPs.put(ip, dualboxIPs.getOrDefault(ip, 0) + 1);
+			}
+		}
 		
 		List<String> keys = new ArrayList<>(dualboxIPs.keySet());
 		Collections.sort(keys, new Comparator<String>()
@@ -971,11 +985,13 @@ public class AdminEditChar implements IAdminCommandHandler
 	{
 		return ADMIN_COMMANDS;
 	}
+	
 	protected static final Logger _log = Logger.getLogger(AdminEditChar.class.getName());
 	static String OLYMPIAD_UPDATE = "UPDATE olympiad_nobles SET class_id=?, olympiad_points=?, competitions_done=?, competitions_won=?, competitions_lost=?, competitions_drawn=? WHERE char_Id=?";
 	static String DELETE_CHAR_HERO = "DELETE FROM heroes WHERE char_id=?";
 	static String NAME_UPDATE = "UPDATE characters SET color_name=?, char_name=? WHERE obj_Id=?";
 	static String TITLE_UPDATE = "UPDATE characters SET color_title=? char_name=? WHERE obj_Id=?";
+	
 	public static void DeleteHero(Player player)
 	{
 		try (Connection con = ConnectionPool.getConnection())
@@ -991,28 +1007,31 @@ public class AdminEditChar implements IAdminCommandHandler
 			
 		}
 	}
-
+	
 	/**
 	 * @param player
 	 */
-	public static void updateClasse(Player player) {
-	    if (player == null)
-	        return;
-
-	    try (Connection con = ConnectionPool.getConnection();
-	         PreparedStatement stmt = con.prepareStatement(OLYMPIAD_UPDATE)) {
-
-	        stmt.setInt(1, player.getClassId().getId());
-	        stmt.setInt(2, 18);
-	        stmt.setInt(3, 0);
-	        stmt.setInt(4, 0);
-	        stmt.setInt(5, 0);
-	        stmt.setInt(6, 0);
-	        stmt.setInt(7, player.getObjectId());
-
-	        stmt.execute();
-	    } catch (Exception e) {
-	        _log.warning("[updateClasse - AdminEditChar]: " + e);
-	    }
+	public static void updateClasse(Player player)
+	{
+		if (player == null)
+			return;
+		
+		try (Connection con = ConnectionPool.getConnection(); PreparedStatement stmt = con.prepareStatement(OLYMPIAD_UPDATE))
+		{
+			
+			stmt.setInt(1, player.getClassId().getId());
+			stmt.setInt(2, 18);
+			stmt.setInt(3, 0);
+			stmt.setInt(4, 0);
+			stmt.setInt(5, 0);
+			stmt.setInt(6, 0);
+			stmt.setInt(7, player.getObjectId());
+			
+			stmt.execute();
+		}
+		catch (Exception e)
+		{
+			_log.warning("[updateClasse - AdminEditChar]: " + e);
+		}
 	}
 }

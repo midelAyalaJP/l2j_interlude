@@ -9,6 +9,7 @@ import net.sf.l2j.mods.data.FakeNameData;
 import net.sf.l2j.mods.data.FakePlayerData;
 import net.sf.l2j.mods.data.FakePrivateBuyData;
 import net.sf.l2j.mods.data.FakePrivateSellData;
+import net.sf.l2j.mods.data.SymbolsData;
 import net.sf.l2j.mods.engine.FakePlayerRestoreEngine;
 import net.sf.l2j.mods.task.FakePlayerAiEngine;
 
@@ -41,6 +42,7 @@ public class FakesEngine
 		FakeNameData.getInstance();
 		FakePrivateSellData.getInstance();
 		FakePrivateBuyData.getInstance();
+		SymbolsData.getInstance();
 	}
 	
 	private static void registerAdmin()
