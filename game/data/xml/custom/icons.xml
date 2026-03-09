@@ -9099,6 +9099,8 @@
 	<icon itemId="9097" iconName="icon.armor_t83_b_i00" />
 	<icon itemId="9098" iconName="icon.armor_t84_ul_i00" />
 	<icon itemId="9099" iconName="icon.armor_t84_g_i00" />
+	
+
 	<icon itemId="9100" iconName="icon.armor_t84_b_i00" />
 	<icon itemId="9101" iconName="icon.armor_t85_ul_i00" />
 	<icon itemId="9102" iconName="icon.armor_t85_g_i00" />
@@ -9162,6 +9164,21 @@
 	<icon itemId="9160" iconName="icon.Accessary_middle_ages_i00" />
 	<icon itemId="9161" iconName="icon.accessory_santas_antler_i00" />
 	
+		
+	<icon itemId="9217" iconName="icon.armor_leather_helmet_i00" />
+	<icon itemId="9218" iconName="icon.armor_t1005_ul_i00" />
+	<icon itemId="9219" iconName="icon.armor_t1005_g_i00" />
+	<icon itemId="9220" iconName="icon.armor_t1005_b_i00" />
+	<icon itemId="9221" iconName="icon.armor_leather_helmet_i00" />
+	<icon itemId="9222" iconName="icon.armor_t1004_ul_i00" />
+	<icon itemId="9223" iconName="icon.armor_t1004_g_i00" />
+	<icon itemId="9224" iconName="icon.armor_t1004_b_i00" />
+	<icon itemId="9225" iconName="icon.armor_helmet_i00" />
+	<icon itemId="9226" iconName="icon.armor_t1006_ul_i00" />
+	<icon itemId="9227" iconName="icon.armor_t1006_g_i00" />
+	<icon itemId="9228" iconName="icon.armor_t1006_b_i00" />
+	
+	
 	<icon itemId="9540" iconName="icon.etc_str_symbol_i00" />
 	<icon itemId="9541" iconName="icon.etc_str_symbol_i01" />
 	<icon itemId="9542" iconName="icon.etc_dex_symbol_i00" />
@@ -9186,7 +9203,24 @@
 	<icon itemId="9530" iconName="Ica_WFS_ICOns.weapon_icarus_trident_i00" />
 	<icon itemId="9534" iconName="Ica_WFS_ICOns.weapon_icarus_stick_i00" />
 	<icon itemId="9537" iconName="icon.weapon_dual_sword_i00" />
-	
 
+	<icon itemId="9600" iconName="TranscendentEternal_WariinG.Icon.armor_helmet_i01" />
+	<icon itemId="9601" iconName="TranscendentEternal_WariinG.armor_t801_u_i01" />
+	<icon itemId="9602" iconName="TranscendentEternal_WariinG.armor_t801_l_i01" />
+	<icon itemId="9603" iconName="TranscendentEternal_WariinG.armor_t801_g_i01" />
+	<icon itemId="9604" iconName="TranscendentEternal_WariinG.armor_t801_b_i01" />
+	<icon itemId="9605" iconName="TranscendentEternal_WariinG.Icon.armor_leather_helmet_i01" />
+	<icon itemId="9606" iconName="TranscendentEternal_WariinG.armor_t802_u_i01" />
+	<icon itemId="9607" iconName="TranscendentEternal_WariinG.armor_t802_l_i01" />
+	<icon itemId="9608" iconName="TranscendentEternal_WariinG.armor_t802_g_i01" />
+	<icon itemId="9609" iconName="TranscendentEternal_WariinG.armor_t802_b_i01" />
+	<icon itemId="9610" iconName="TranscendentEternal_WariinG.Icon.armor_circlet_i01" />
+	<icon itemId="9611" iconName="TranscendentEternal_WariinG.armor_t803_u_i01" />
+	<icon itemId="9612" iconName="TranscendentEternal_WariinG.armor_t803_l_i01" />
+	<icon itemId="9613" iconName="TranscendentEternal_WariinG.armor_t803_g_i01" />
+	<icon itemId="9614" iconName="TranscendentEternal_WariinG.armor_t803_b_i01" />
+	
+	
+	
 
 </list>

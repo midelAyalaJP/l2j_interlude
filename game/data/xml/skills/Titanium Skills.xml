@@ -86,4 +86,60 @@ Description:
     <mul order="0x30" stat="stunVuln" val="0.5"/> <!-- Stun resistance +50% -->
   </for>
 </skill>
+
+<skill id="7253" levels="1" name="Dark Kinight Heavy Armor Set">
+  <set name="power" val="0.0"/>
+  <set name="target" val="TARGET_SELF"/>
+  <set name="skillType" val="BUFF"/>
+  <set name="operateType" val="OP_PASSIVE"/>
+  <set name="castRange" val="-1"/>
+  <set name="effectRange" val="-1"/>
+  <for>
+    <mul order="0x30" stat="pDef" val="1.10"/>
+    <add order="0x40" stat="maxHp" val="750"/>
+    <mul order="0x30" stat="sleepVuln" val="0.75"/>
+    <mul order="0x30" stat="rootVuln" val="0.75"/>
+    <sub order="0x40" stat="DEX" val="2"/>
+    <add order="0x40" stat="STR" val="2"/>
+  </for>
+</skill>
+
+<skill id="7254" levels="1" name="Dark Kinight Light Armor Set">
+  <set name="power" val="0.0"/>
+  <set name="target" val="TARGET_SELF"/>
+  <set name="skillType" val="BUFF"/>
+  <set name="operateType" val="OP_PASSIVE"/>
+  <set name="castRange" val="-1"/>
+  <set name="effectRange" val="-1"/>
+  <for>
+    <mul order="0x30" stat="pAtkSpd" val="1.06"/>
+    <mul order="0x30" stat="pAtk" val="1.06"/>
+    <add order="0x40" stat="maxMp" val="489"/>
+    <add order="0x40" stat="maxLoad" val="6000"/>
+    <add order="0x40" stat="DEX" val="1"/>
+    <add order="0x40" stat="STR" val="1"/>
+    <sub order="0x40" stat="CON" val="2"/>
+  </for>
+</skill>
+
+<skill id="7255" levels="1" name="Dark Kinight Robe Set">
+  <set name="power" val="0.0"/>
+  <set name="target" val="TARGET_SELF"/>
+  <set name="skillType" val="BUFF"/>
+  <set name="operateType" val="OP_PASSIVE"/>
+  <set name="castRange" val="-1"/>
+  <set name="effectRange" val="-1"/>
+  <for>
+    <mul order="0x30" stat="mAtk" val="1.18"/>
+    <mul order="0x30" stat="mAtkSpd" val="1.06"/>
+    <add order="0x40" stat="runSpd" val="8"/>
+    <sub order="0x40" stat="cancel" val="50"/>
+    <add order="0x40" stat="maxLoad" val="6000"/>
+    <add order="0x40" stat="WIT" val="1"/>
+    <add order="0x40" stat="INT" val="1"/>
+    <sub order="0x40" stat="MEN" val="2"/>
+    <mul order="0x30" stat="stunVuln" val="0.50"/>
+  </for>
+</skill>
+
 </list>
