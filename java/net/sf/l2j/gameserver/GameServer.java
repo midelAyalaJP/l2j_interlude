@@ -88,6 +88,7 @@ import net.sf.l2j.gameserver.datatables.StaticObjects;
 import net.sf.l2j.gameserver.datatables.SummonItemsData;
 import net.sf.l2j.gameserver.datatables.TeleportLocationTable;
 import net.sf.l2j.gameserver.datatables.xml.DressMeData;
+import net.sf.l2j.gameserver.datatables.xml.EnchantSkillRateData;
 import net.sf.l2j.gameserver.datatables.xml.FakePcsTable;
 import net.sf.l2j.gameserver.datatables.xml.GmData;
 import net.sf.l2j.gameserver.datatables.xml.HerbDropData;
@@ -496,6 +497,7 @@ public class GameServer
 		TvTManager.getInstance();
 		CTFConfig.init();
 		CTFManager.getInstance();
+		EnchantSkillRateData.getInstance();
 		if ((Config.START_PARTY))
 		{
 			_log.info("[Start Spawn Party Farm]: Enabled");

@@ -1,5 +1,7 @@
 package net.sf.l2j.gameserver.model;
 
+import net.sf.l2j.gameserver.datatables.xml.EnchantSkillRateData;
+
 public final class L2EnchantSkillData
 {
 	private final int _costExp;
@@ -21,44 +23,32 @@ public final class L2EnchantSkillData
 		_rate78 = rate78;
 	}
 	
-	/**
-	 * @return Returns the costExp.
-	 */
 	public int getCostExp()
 	{
 		return _costExp;
 	}
 	
-	/**
-	 * @return Returns the costSp.
-	 */
 	public int getCostSp()
 	{
 		return _costSp;
 	}
 	
-	/**
-	 * @return Returns the itemId.
-	 */
 	public int getItemId()
 	{
 		return _itemId;
 	}
 	
-	/**
-	 * @return Returns the itemAmount.
-	 */
 	public int getItemCount()
 	{
 		return _itemCount;
 	}
 	
-	/**
-	 * @return Returns the rate according to level.
-	 * @param level : Level determines the rate.
-	 */
 	public int getRate(int level)
 	{
+		final int xmlRate = EnchantSkillRateData.getInstance().getRate(1, level);
+		if (xmlRate >= 0)
+			return xmlRate;
+		
 		switch (level)
 		{
 			case 76:

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	Enchant Skill Rate Configuration
+
+	Formato:
+		level-percent
+
+	O primeiro valor representa o LEVEL do jogador.
+	O segundo valor representa a CHANCE (%) de sucesso do enchant.
+
+	Separação:
+		- Use "-" para separar LEVEL e %
+		- Use ";" para separar múltiplas entradas
+
+	Exemplo:
+		76-1  = jogador level 76 tem 1% de chance
+		77-2  = jogador level 77 tem 2% de chance
+		78-3  = jogador level 78 tem 3% de chance
+
+	Importante:
+	- O sistema usa apenas o id="1"
+	- Se o level do jogador não existir na lista, o sistema usa o fallback interno do servidor.
+	
+	Exemplo de configuração custom
+	Um servidor mais fácil:
+	<enchant id="1" rates="76-20;77-25;78-30;79-35;80-40" />
+	
+	Um servidor hardcore:
+	<enchant id="1" rates="76-1;77-1;78-2;79-2;80-3" />
+-->
+
+<list>
+
+	<!--
+		Formato geral:
+		rates="level-percent;level-percent;level-percent"
+	-->
+	<enchant id="1" rates="76-1;77-2;78-3;79-4;80-5" />
+
+</list>

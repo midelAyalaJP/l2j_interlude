@@ -27,6 +27,7 @@ import net.sf.l2j.gameserver.datatables.NpcWalkerRoutesTable;
 import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.datatables.TeleportLocationTable;
 import net.sf.l2j.gameserver.datatables.xml.DressMeData;
+import net.sf.l2j.gameserver.datatables.xml.EnchantSkillRateData;
 import net.sf.l2j.gameserver.datatables.xml.FakePcsTable;
 import net.sf.l2j.gameserver.datatables.xml.MerchantData;
 import net.sf.l2j.gameserver.datatables.xml.RouletteData;
@@ -200,6 +201,11 @@ public class AdminAdmin implements IAdminCommandHandler
 					{
 						AdminCommandAccessRights.getInstance().reload();
 						activeChar.sendMessage("Admin commands rights have been reloaded.");
+					}
+					else if (type.startsWith("enchantskillrate"))
+					{
+						EnchantSkillRateData.getInstance().reload();
+						activeChar.sendMessage("EnchantSkillRateData reloaded.");
 					}
 					else if (type.startsWith("talent"))
 					{

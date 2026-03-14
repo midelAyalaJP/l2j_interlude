@@ -21,7 +21,6 @@ import net.sf.l2j.gameserver.util.FloodProtectors.Action;
 
 /**
  * Format chdd
- * @author -Wooden-
  */
 public final class RequestExEnchantSkill extends L2GameClientPacket
 {
@@ -55,11 +54,11 @@ public final class RequestExEnchantSkill extends L2GameClientPacket
 		if (!activeChar.isInsideRadius(trainer, L2Npc.INTERACTION_DISTANCE, false, false))
 			return;
 		
-		if(Config.ENABLE_ENCHANT_SKILL_NPCID)
+		if (Config.ENABLE_ENCHANT_SKILL_NPCID)
 		{
-			if(!(trainer.getNpcId() == Config.NPC_ENCHANT_SKILL_ID))	
+			if (!(trainer.getNpcId() == Config.NPC_ENCHANT_SKILL_ID))
 			{
-				activeChar.sendMessage("Impossible Enchant Skill, use Npc --> " +NpcTable.getInstance().getTemplate(Config.NPC_ENCHANT_SKILL_ID).getName());
+				activeChar.sendMessage("Impossible Enchant Skill, use Npc --> " + NpcTable.getInstance().getTemplate(Config.NPC_ENCHANT_SKILL_ID).getName());
 				return;
 			}
 			if (!FloodProtectors.performAction(activeChar.getClient(), Action.USER_ENCHANT_SKILL))
@@ -153,6 +152,6 @@ public final class RequestExEnchantSkill extends L2GameClientPacket
 		
 		// Show enchant skill list.
 		L2NpcInstance.showEnchantSkillList(activeChar, trainer, activeChar.getClassId());
-		 
+		
 	}
 }
