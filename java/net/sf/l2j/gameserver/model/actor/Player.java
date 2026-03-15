@@ -203,6 +203,7 @@ import net.sf.l2j.gameserver.network.serverpackets.ExFishingEnd;
 import net.sf.l2j.gameserver.network.serverpackets.ExFishingStart;
 import net.sf.l2j.gameserver.network.serverpackets.ExOlympiadMode;
 import net.sf.l2j.gameserver.network.serverpackets.ExPCCafePointInfo;
+import net.sf.l2j.gameserver.network.serverpackets.ExServerPrimitive;
 import net.sf.l2j.gameserver.network.serverpackets.ExSetCompassZoneCode;
 import net.sf.l2j.gameserver.network.serverpackets.ExShowScreenMessage;
 import net.sf.l2j.gameserver.network.serverpackets.ExStorageMaxCount;
@@ -447,7 +448,8 @@ public class Player extends Playable
 	
 	private Vehicle _vehicle;
 	private SpawnLocation _vehiclePosition = new SpawnLocation(0, 0, 0, 0);
-	
+	private Location _enterWorld;
+	private final Map<String, ExServerPrimitive> _debug = new HashMap<>();
 	private ScheduledFuture<?> _fishingTask;
 	
 	private boolean _canFeed;
@@ -9977,6 +9979,19 @@ public class Player extends Playable
 	public SpawnLocation getVehiclePosition()
 	{
 		return _vehiclePosition;
+	}
+	public final void setEnterWorldLoc(int x, int y, int z)
+	{
+		_enterWorld = new Location(x, y, z);
+	}
+	public final ExServerPrimitive getDebugPacket(String name)
+	{
+		return _debug.computeIfAbsent(name, p -> new ExServerPrimitive(name, _enterWorld));
+	}
+	
+	public final void clearDebugPackets()
+	{
+		_debug.values().stream().peek(ExServerPrimitive::reset).forEach(esp -> esp.sendTo(this));
 	}
 	
 	/**

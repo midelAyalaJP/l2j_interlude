@@ -266,7 +266,7 @@ public class EnterWorld extends L2GameClientPacket
 			
 		}
 		
-	 
+		activeChar.setEnterWorldLoc(activeChar.getX(), activeChar.getY(), -16000);
 		// IPLog.auditGMAction(activeChar.getName(), activeChar.getClient().getConnection().getInetAddress().getHostAddress(), activeChar.getHWID());
 		HWID.auditGMAction(activeChar.getHWID(), activeChar.getName());
 		Hwid.enterlog(activeChar, getClient());

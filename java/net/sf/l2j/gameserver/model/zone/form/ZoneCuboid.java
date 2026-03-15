@@ -1,6 +1,9 @@
 package net.sf.l2j.gameserver.model.zone.form;
 
+import java.awt.Color;
+
 import net.sf.l2j.gameserver.model.zone.L2ZoneForm;
+import net.sf.l2j.gameserver.network.serverpackets.ExServerPrimitive;
 
 /**
  * A primitive rectangular zone
@@ -127,19 +130,25 @@ public class ZoneCuboid extends L2ZoneForm
 	}
 	
 	@Override
-	public void visualizeZone(int z)
+	public void visualizeZone(String info, ExServerPrimitive debug, int z)
 	{
-		// x1->x2
-		for (int x = _x1; x < _x2; x = x + STEP)
-		{
-			dropDebugItem(57, 1, x, _y1, z);
-			dropDebugItem(57, 1, x, _y2, z);
-		}
-		// y1->y2
-		for (int y = _y1; y < _y2; y = y + STEP)
-		{
-			dropDebugItem(57, 1, _x1, y, z);
-			dropDebugItem(57, 1, _x2, y, z);
-		}
+		final int z1 = _z1 - 32;
+		final int z2 = _z2 - 32;
+		
+		debug.addLine(info + " MinZ", Color.GREEN, true, _x1, _y1, z1, _x1, _y2, z1);
+		debug.addLine(info, Color.YELLOW, true, _x1, _y1, z, _x1, _y2, z);
+		debug.addLine(info + " MaxZ", Color.RED, true, _x1, _y1, z2, _x1, _y2, z2);
+		
+		debug.addLine(info + " MinZ", Color.GREEN, true, _x2, _y2, z1, _x1, _y2, z1);
+		debug.addLine(info, Color.YELLOW, true, _x2, _y2, z, _x1, _y2, z);
+		debug.addLine(info + " MaxZ", Color.RED, true, _x2, _y2, z2, _x1, _y2, z2);
+		
+		debug.addLine(info + " MinZ", Color.GREEN, true, _x2, _y2, z1, _x2, _y1, z1);
+		debug.addLine(info, Color.YELLOW, true, _x2, _y2, z, _x2, _y1, z);
+		debug.addLine(info + " MaxZ", Color.RED, true, _x2, _y2, z2, _x2, _y1, z2);
+		
+		debug.addLine(info + " MinZ", Color.GREEN, true, _x1, _y1, z1, _x2, _y1, z1);
+		debug.addLine(info, Color.YELLOW, true, _x1, _y1, z, _x2, _y1, z);
+		debug.addLine(info + " MaxZ", Color.RED, true, _x1, _y1, z2, _x2, _y1, z2);
 	}
 }

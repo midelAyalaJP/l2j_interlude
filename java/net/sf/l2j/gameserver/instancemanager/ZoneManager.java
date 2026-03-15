@@ -29,7 +29,6 @@ import net.sf.l2j.gameserver.model.L2World;
 import net.sf.l2j.gameserver.model.L2WorldRegion;
 import net.sf.l2j.gameserver.model.Location;
 import net.sf.l2j.gameserver.model.actor.Creature;
-import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.zone.L2SpawnZone;
 import net.sf.l2j.gameserver.model.zone.L2ZoneType;
 import net.sf.l2j.gameserver.model.zone.form.ZoneCuboid;
@@ -60,7 +59,7 @@ public class ZoneManager
 	
 	private final Map<Class<? extends L2ZoneType>, Map<Integer, ? extends L2ZoneType>> _classZones = new HashMap<>();
 	private int _lastDynamicId = 0;
-	private final List<ItemInstance> _debugItems = new ArrayList<>();
+
 	
 	public static final ZoneManager getInstance()
 	{
@@ -94,7 +93,6 @@ public class ZoneManager
 		
 		// clear
 		_classZones.clear();
-		clearDebugItems();
 		
 		// load all zones
 		load();
@@ -594,25 +592,6 @@ public class ZoneManager
 		return zone;
 	}
 	
-	/**
-	 * General storage for debug items used for visualizing zones.
-	 * @return list of items
-	 */
-	public List<ItemInstance> getDebugItems()
-	{
-		return _debugItems;
-	}
-
-	/**
-	 * Remove all debug items from l2world
-	 */
-	public void clearDebugItems()
-	{
-		for (ItemInstance item : _debugItems)
-			item.decayMe();
-		
-		_debugItems.clear();
-	}
 	
 	private static class SingletonHolder
 	{

@@ -1,6 +1,9 @@
 package net.sf.l2j.gameserver.model.zone.form;
 
+import java.awt.Color;
+
 import net.sf.l2j.gameserver.model.zone.L2ZoneForm;
+import net.sf.l2j.gameserver.network.serverpackets.ExServerPrimitive;
 
 /**
  * A not so primitive npoly zone
@@ -107,23 +110,22 @@ public class ZoneNPoly extends L2ZoneForm
 	}
 	
 	@Override
-	public void visualizeZone(int z)
+	public void visualizeZone(String info, ExServerPrimitive debug, int z)
 	{
+		final int z1 = _z1 - 32;
+		final int z2 = _z2 - 32;
+		
 		for (int i = 0; i < _x.length; i++)
 		{
 			int nextIndex = i + 1;
+			
 			// ending point to first one
 			if (nextIndex == _x.length)
 				nextIndex = 0;
-			int vx = _x[nextIndex] - _x[i];
-			int vy = _y[nextIndex] - _y[i];
-			float lenght = (float) Math.sqrt(vx * vx + vy * vy);
-			lenght /= STEP;
-			for (int o = 1; o <= lenght; o++)
-			{
-				float k = o / lenght;
-				dropDebugItem(57, 1, (int) (_x[i] + k * vx), (int) (_y[i] + k * vy), z);
-			}
+			
+			debug.addLine(info + " MinZ", Color.GREEN, true, _x[i], _y[i], z1, _x[nextIndex], _y[nextIndex], z1);
+			debug.addLine(info, Color.YELLOW, true, _x[i], _y[i], z, _x[nextIndex], _y[nextIndex], z);
+			debug.addLine(info + " MaxZ", Color.RED, true, _x[i], _y[i], z2, _x[nextIndex], _y[nextIndex], z2);
 		}
 	}
 }

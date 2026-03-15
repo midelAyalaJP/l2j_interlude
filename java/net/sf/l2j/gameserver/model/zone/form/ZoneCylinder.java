@@ -1,6 +1,9 @@
 package net.sf.l2j.gameserver.model.zone.form;
 
+import java.awt.Color;
+
 import net.sf.l2j.gameserver.model.zone.L2ZoneForm;
+import net.sf.l2j.gameserver.network.serverpackets.ExServerPrimitive;
 
 /**
  * A primitive circular zone
@@ -86,15 +89,22 @@ public class ZoneCylinder extends L2ZoneForm
 	}
 	
 	@Override
-	public void visualizeZone(int z)
+	public void visualizeZone(String info, ExServerPrimitive debug, int z)
 	{
+		final int z1 = _z1 - 32;
+		final int z2 = _z2 - 32;
+		
 		int count = (int) (2 * Math.PI * _rad / STEP);
 		double angle = 2 * Math.PI / count;
+		
 		for (int i = 0; i < count; i++)
 		{
 			int x = (int) (Math.cos(angle * i) * _rad);
 			int y = (int) (Math.sin(angle * i) * _rad);
-			dropDebugItem(57, 1, _x + x, _y + y, z);
+			
+			debug.addPoint(info + " MinZ", Color.GREEN, true, _x + x, _y + y, z1);
+			debug.addPoint(info, Color.YELLOW, true, _x + x, _y + y, z);
+			debug.addPoint(info + " MaxZ", Color.RED, true, _x + x, _y + y, z2);
 		}
 	}
 }

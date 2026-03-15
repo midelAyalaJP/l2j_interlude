@@ -10,6 +10,7 @@ import net.sf.l2j.gameserver.model.L2World;
 import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.zone.L2ZoneType;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
+import net.sf.l2j.gameserver.network.serverpackets.ExServerPrimitive;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 
 public class AdminZone implements IAdminCommandHandler
@@ -38,20 +39,34 @@ public class AdminZone implements IAdminCommandHandler
 				String next = st.nextToken();
 				if (next.equalsIgnoreCase("all"))
 				{
+					final ExServerPrimitive debug = activeChar.getDebugPacket("ZONE");
+					debug.reset();
+					
 					for (L2ZoneType zone : ZoneManager.getInstance().getZones(activeChar))
-						zone.visualizeZone(activeChar.getZ());
+						zone.visualizeZone(debug, activeChar.getZ());
+					
+					debug.sendTo(activeChar);
+					
+					
+					
 					
 					showHtml(activeChar);
 				}
 				else if (next.equalsIgnoreCase("clear"))
 				{
-					ZoneManager.getInstance().clearDebugItems();
+		
+					final ExServerPrimitive debug = activeChar.getDebugPacket("ZONE");
+					debug.reset();
+					debug.sendTo(activeChar);
 					showHtml(activeChar);
 				}
 				else
 				{
 					int zoneId = Integer.parseInt(next);
-					ZoneManager.getInstance().getZoneById(zoneId).visualizeZone(activeChar.getZ());
+					final ExServerPrimitive debug = activeChar.getDebugPacket("ZONE");
+					debug.reset();
+					
+					ZoneManager.getInstance().getZoneById(zoneId).visualizeZone(debug, activeChar.getZ());
 				}
 			}
 			catch (Exception e)

@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import net.sf.l2j.gameserver.model.L2Object;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.Player;
+import net.sf.l2j.gameserver.network.serverpackets.ExServerPrimitive;
 import net.sf.l2j.gameserver.network.serverpackets.L2GameServerPacket;
 import net.sf.l2j.gameserver.scriptings.EventType;
 import net.sf.l2j.gameserver.scriptings.Quest;
@@ -267,10 +268,11 @@ public abstract class L2ZoneType
 		return getClass().getSimpleName() + "[" + _id + "]";
 	}
 	
-	public void visualizeZone(int z)
+	public void visualizeZone(ExServerPrimitive debug, int z)
 	{
-		getZone().visualizeZone(z);
+		_zone.visualizeZone(toString(), debug, z);
 	}
+	
 	private String _fileSource;
 	
 	public void setFileSource(String fileSource)
