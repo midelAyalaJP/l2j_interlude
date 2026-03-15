@@ -156,6 +156,7 @@ import net.sf.l2j.gameserver.model.vehicles.BoatGludinRune;
 import net.sf.l2j.gameserver.model.vehicles.BoatInnadrilTour;
 import net.sf.l2j.gameserver.model.vehicles.BoatRunePrimeval;
 import net.sf.l2j.gameserver.model.vehicles.BoatTalkingGludin;
+import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.L2GamePacketHandler;
 import net.sf.l2j.gameserver.scriptings.ScriptManager;
@@ -546,6 +547,20 @@ public class GameServer
 		{
 			_log.info("Tournament Event is disabled");
 		}
+		
+		ThreadPool.schedule("GameServer: L2SpawnDropZone task replaceExistingSpawnsNow",() ->
+		{
+			for (L2SpawnDropZone temp : ZoneManager.getInstance().getAllZones(L2SpawnDropZone.class))
+			{
+				if (temp != null)
+				{
+					if (temp.isReplaceExistingSpawns())
+						temp.replaceExistingSpawnsNow();
+				}
+			}
+		}, 1000 * 15);
+		
+		
 		GmData.getInstance();
 		MerchantData.getInstance();
 		StringUtil.printSection("Handlers");

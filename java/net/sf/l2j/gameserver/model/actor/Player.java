@@ -186,6 +186,7 @@ import net.sf.l2j.gameserver.model.tradelist.TradeList;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
 import net.sf.l2j.gameserver.model.zone.type.L2FishingZone;
+import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
@@ -14623,5 +14624,39 @@ public class Player extends Playable
 	{
 		sendMessage("[TALENT] " + msg);
 		return false;
+	}
+	private long _lastPcBangRewardTime;
+	public long getLastPcBangRewardTime()
+	{
+		return _lastPcBangRewardTime;
+	}
+
+	public void setLastPcBangRewardTime(long time)
+	{
+		_lastPcBangRewardTime = time;
+	}
+	
+	private L2SpawnDropZone _lastSpawnDropZone;
+
+	public void setLastSpawnDropZone(L2SpawnDropZone zone)
+	{
+		_lastSpawnDropZone = zone;
+	}
+
+	public L2SpawnDropZone getLastSpawnDropZone()
+	{
+		return _lastSpawnDropZone;
+	}
+	
+	private L2SpawnDropZone _deathSpawnDropZone;
+
+	public void setDeathSpawnDropZone(L2SpawnDropZone zone)
+	{
+		_deathSpawnDropZone = zone;
+	}
+
+	public L2SpawnDropZone getDeathSpawnDropZone()
+	{
+		return _deathSpawnDropZone;
 	}
 }

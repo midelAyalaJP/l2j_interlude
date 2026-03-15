@@ -46,7 +46,7 @@ public abstract class L2SpawnZone extends L2ZoneType
 		return Rnd.get(_spawnLocs);
 	}
 	
-	public final Location getChaoticSpawnLoc()
+	public Location getChaoticSpawnLoc()
 	{
 		if (_chaoticSpawnLocs != null)
 			return Rnd.get(_chaoticSpawnLocs);

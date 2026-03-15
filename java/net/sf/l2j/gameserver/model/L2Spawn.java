@@ -3,16 +3,17 @@ package net.sf.l2j.gameserver.model;
 import java.lang.reflect.Constructor;
 import java.util.logging.Logger;
 
-import net.sf.l2j.Config;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.event.championInvade.ChampionInvade;
 import net.sf.l2j.gameserver.ThreadPool;
+import net.sf.l2j.gameserver.datatables.SpawnDropZoneManager;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
+import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.L2Npc;
 import net.sf.l2j.gameserver.model.actor.instance.L2AgathionInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2MonsterInstance;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
+import net.sf.l2j.gameserver.model.zone.ZoneId;
+import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 
 /**
  * This class manages the spawn and respawn a {@link L2Npc}.<br>
@@ -244,6 +245,11 @@ public final class L2Spawn implements Runnable
 		_respawnEnabled = state;
 	}
 	
+	public boolean getRespawnState()
+	{
+		return _respawnEnabled != false;
+	}
+	
 	/**
 	 * Set the minimum respawn delay.
 	 * @param date
@@ -367,7 +373,7 @@ public final class L2Spawn implements Runnable
 			final int respawnTime = getRespawnTime() * 1000;
 			
 			// Schedule respawn of the NPC
-			ThreadPool.schedule(this, respawnTime);
+			ThreadPool.schedule("L2Spawn: doRespawn Task", this, respawnTime);
 		}
 	}
 	
@@ -411,35 +417,33 @@ public final class L2Spawn implements Runnable
 		int locx = _loc.getX();
 		int locy = _loc.getY();
 		int locz = _loc.getZ();
-
 		
 		// Set the HP and MP of the L2Npc to the max
 		_npc.setCurrentHpMp(_npc.getMaxHp(), _npc.getMaxMp());
 		
-		// when champion mod is enabled, try to make NPC a champion
-		if (Config.CHAMPION_FREQUENCY > 0)
-		{
-			// It can't be a Raid, a Raid minion nor a minion. Quest mobs and chests are disabled too.
-			if (_npc instanceof L2MonsterInstance && !getTemplate().cantBeChampion() && _npc.getLevel() >= Config.CHAMP_MIN_LVL && _npc.getLevel() <= Config.CHAMP_MAX_LVL && !_npc.isRaid() && !((L2MonsterInstance) _npc).isRaidMinion() && !((L2MonsterInstance) _npc).isMinion() && !_npc.isAgathion())
-				_npc.setChampion(Rnd.get(100) < Config.CHAMPION_FREQUENCY);
-		}
-		if (ChampionInvade.is_started())
-		{
-			if (Config.CHAMPION_INVADE_FREQUENCY > 0 && Config.CHAMPION_FARM_BY_TIME_OF_DAY)
-			{
-				if (Config.LIST_NPC_CHAMPION_MONSTER.contains(Integer.valueOf(_template.getNpcId())))
-					_npc.setChampionInvade(Rnd.get(100) < Config.CHAMPION_INVADE_FREQUENCY);
-			}
-		}
-		else if (ChampionInvade.is_finish() && Config.LIST_NPC_CHAMPION_MONSTER.contains(Integer.valueOf(_template.getNpcId())))
-		{
-			_npc.setChampionInvade(Rnd.get(100) < 0);
-		}
 		// set heading (random heading if not defined)
 		_npc.setHeading(_loc.getHeading() < 0 ? Rnd.get(65536) : _loc.getHeading());
 		
 		// spawn NPC on new coordinates
 		_npc.spawnMe(locx, locy, locz);
+		
+		for (L2SpawnDropZone temp : ZoneManager.getInstance().getAllZones(L2SpawnDropZone.class))
+		{
+			if (temp != null)
+			{
+				if (_npc.isInsideZone(ZoneId.DROP_ZONE))
+				{
+					temp = SpawnDropZoneManager.getInstance().getZoneByNpc(_npc);
+					if (temp == null)
+					{
+						SpawnDropZoneManager.getInstance().registerZoneNpc(temp, _npc);
+						SpawnDropZoneManager.getInstance().registerZoneSpawn(temp, this);
+					}
+					
+					
+				}
+			}
+		}
 		
 	}
 	

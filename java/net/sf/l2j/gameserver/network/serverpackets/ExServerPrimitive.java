@@ -9,7 +9,7 @@ import net.sf.l2j.gameserver.model.actor.Player;
 
 public class ExServerPrimitive extends L2GameServerPacket
 {
-	private static final int MAX_SIZE = 16000;
+	private static final int MAX_SIZE = 1000;
 	
 	private final Set<Point> _points = ConcurrentHashMap.newKeySet();
 	private final Set<Line> _lines = ConcurrentHashMap.newKeySet();

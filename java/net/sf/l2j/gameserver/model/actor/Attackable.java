@@ -22,6 +22,7 @@ import net.sf.l2j.gameserver.ai.model.L2AttackableAI;
 import net.sf.l2j.gameserver.ai.model.L2CharacterAI;
 import net.sf.l2j.gameserver.ai.model.L2SiegeGuardAI;
 import net.sf.l2j.gameserver.datatables.ItemTable;
+import net.sf.l2j.gameserver.datatables.SpawnDropZoneManager;
 import net.sf.l2j.gameserver.datatables.xml.HerbDropData;
 import net.sf.l2j.gameserver.instancemanager.CursedWeaponsManager;
 import net.sf.l2j.gameserver.model.AbsorbInfo;
@@ -34,6 +35,7 @@ import net.sf.l2j.gameserver.model.L2Object;
 import net.sf.l2j.gameserver.model.L2Party;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.RewardInfo;
+import net.sf.l2j.gameserver.model.actor.instance.L2RaidBossInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2SummonInstance;
 import net.sf.l2j.gameserver.model.actor.knownlist.AttackableKnownList;
 import net.sf.l2j.gameserver.model.actor.status.AttackableStatus;
@@ -44,6 +46,8 @@ import net.sf.l2j.gameserver.model.item.DropData;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.kind.Armor;
 import net.sf.l2j.gameserver.model.item.kind.Weapon;
+import net.sf.l2j.gameserver.model.zone.custom.SpawnDropZoneReward;
+import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 import net.sf.l2j.gameserver.model.zone.type.L2TimeFarmZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
@@ -197,6 +201,14 @@ public class Attackable extends L2Npc
 		// Kill the L2Npc (the corpse disappeared after 7 seconds)
 		if (!super.doDie(killer))
 			return false;
+		
+		final Player killerPlayer = (killer != null) ? killer.getActingPlayer() : null;
+		if (killerPlayer != null)
+		{
+			final L2SpawnDropZone zone = SpawnDropZoneManager.getInstance().getZoneByNpc(this);
+			if (zone != null)
+				SpawnDropZoneReward.reward(this, killerPlayer, zone, this instanceof L2RaidBossInstance);
+		}
 		
 		// Notify the Quest Engine of the L2Attackable death if necessary
 		try

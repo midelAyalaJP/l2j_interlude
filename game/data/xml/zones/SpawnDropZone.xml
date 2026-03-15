@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<list>
+	<zone type="SpawnDropZone" shape="Cylinder" minZ="-4743" maxZ="-2743" rad="11000">
+		<stat name="townId" val="0" />
+		<stat name="isPeaceZone" val="false" />
+		<stat name="rewardTarget" val="PARTY" />
+		<stat name="replaceExistingSpawns" val="true" />
+		<stat name="replaceMonsters" val="true" />
+		<stat name="replaceRaidBosses" val="true" />
+		<stat name="reviveX" val="82480" />
+		<stat name="reviveY" val="149087" />
+		<stat name="reviveZ" val="-3350" />
+
+		<node X="67992" Y="-72012" />
+
+		<revive X="82480" Y="149087" Z="-3350" />
+
+		<spawns>
+			<monster npcId="18001" heading="0" respawn="10" />
+			<monster npcId="18003" heading="0" respawn="10" />
+			<monster npcId="18004" heading="0" respawn="10" />
+			<monster npcId="18005" heading="0" respawn="10" />
+
+
+			<raidboss npcId="18002" heading="0" respawn="300" />
+		</spawns>
+
+		<drops>
+			<category name="COMMON" chance="100">
+				<item id="57" min="1000" max="5000" chance="100" />
+				<item id="5575" min="1" max="3" chance="35" />
+			</category>
+
+			<category name="RARE" chance="30">
+				<item id="6393" min="1" max="1" chance="10" />
+				<item id="6392" min="1" max="2" chance="20" />
+			</category>
+
+			<category name="EPIC" chance="5">
+				<item id="3470" min="1" max="1" chance="2" />
+			</category>
+		</drops>
+	</zone>
+</list>

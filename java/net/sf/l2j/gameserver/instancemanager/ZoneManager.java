@@ -31,12 +31,16 @@ import net.sf.l2j.gameserver.model.Location;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.zone.L2SpawnZone;
 import net.sf.l2j.gameserver.model.zone.L2ZoneType;
+import net.sf.l2j.gameserver.model.zone.custom.ZoneDropCategory;
+import net.sf.l2j.gameserver.model.zone.custom.ZoneDropItemData;
+import net.sf.l2j.gameserver.model.zone.custom.ZoneNpcTemplateData;
 import net.sf.l2j.gameserver.model.zone.form.ZoneCuboid;
 import net.sf.l2j.gameserver.model.zone.form.ZoneCylinder;
 import net.sf.l2j.gameserver.model.zone.form.ZoneNPoly;
 import net.sf.l2j.gameserver.model.zone.type.L2ArenaZone;
 import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
 import net.sf.l2j.gameserver.model.zone.type.L2OlympiadStadiumZone;
+import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 import net.sf.l2j.gameserver.model.zone.type.L2TimeFarmZone;
 import net.sf.l2j.gameserver.xmlfactory.XMLDocumentFactory;
 
@@ -299,35 +303,52 @@ public class ZoneManager
 							if ("stat".equalsIgnoreCase(cd.getNodeName()))
 							{
 								attrs = cd.getAttributes();
-								String name = attrs.getNamedItem("name").getNodeValue();
-								String val = attrs.getNamedItem("val").getNodeValue();
-								
+								final String name = attrs.getNamedItem("name").getNodeValue();
+								final String val = attrs.getNamedItem("val").getNodeValue();
+
 								temp.setParameter(name, val);
 							}
 							else if ("spawn".equalsIgnoreCase(cd.getNodeName()))
 							{
-							    attrs = cd.getAttributes();
-							    int spawnX = Integer.parseInt(attrs.getNamedItem("X").getNodeValue());
-							    int spawnY = Integer.parseInt(attrs.getNamedItem("Y").getNodeValue());
-							    int spawnZ = Integer.parseInt(attrs.getNamedItem("Z").getNodeValue());
+								attrs = cd.getAttributes();
+								final int spawnX = Integer.parseInt(attrs.getNamedItem("X").getNodeValue());
+								final int spawnY = Integer.parseInt(attrs.getNamedItem("Y").getNodeValue());
+								final int spawnZ = Integer.parseInt(attrs.getNamedItem("Z").getNodeValue());
 
-							    if (temp instanceof L2TimeFarmZone)
-							    {
-							        ((L2TimeFarmZone) temp).addSpawn(new Location(spawnX, spawnY, spawnZ));
-							    }
-							    else if (temp instanceof L2SpawnZone)
-							    {
-							        Node val = attrs.getNamedItem("isChaotic");
-							        if (val != null && Boolean.parseBoolean(val.getNodeValue()))
-							            ((L2SpawnZone) temp).addChaoticSpawn(spawnX, spawnY, spawnZ);
-							        else
-							            ((L2SpawnZone) temp).addSpawn(spawnX, spawnY, spawnZ);
-							    }
+								if (temp instanceof L2TimeFarmZone)
+								{
+									((L2TimeFarmZone) temp).addSpawn(new Location(spawnX, spawnY, spawnZ));
+								}
+								else if (temp instanceof L2SpawnZone)
+								{
+									final Node val = attrs.getNamedItem("isChaotic");
+									if ((val != null) && Boolean.parseBoolean(val.getNodeValue()))
+										((L2SpawnZone) temp).addChaoticSpawn(spawnX, spawnY, spawnZ);
+									else
+										((L2SpawnZone) temp).addSpawn(spawnX, spawnY, spawnZ);
+								}
 							}
+							else if ((temp instanceof L2SpawnDropZone) && "revive".equalsIgnoreCase(cd.getNodeName()))
+							{
+								final L2SpawnDropZone zone = (L2SpawnDropZone) temp;
+								attrs = cd.getAttributes();
 
-							
-							
+								final int x = Integer.parseInt(attrs.getNamedItem("X").getNodeValue());
+								final int y = Integer.parseInt(attrs.getNamedItem("Y").getNodeValue());
+								final int z = Integer.parseInt(attrs.getNamedItem("Z").getNodeValue());
+
+								zone.setReviveLoc(new Location(x, y, z));
+							}
+							else if ((temp instanceof L2SpawnDropZone) && "spawns".equalsIgnoreCase(cd.getNodeName()))
+							{
+								parseSpawnDropZoneSpawns((L2SpawnDropZone) temp, cd);
+							}
+							else if ((temp instanceof L2SpawnDropZone) && "drops".equalsIgnoreCase(cd.getNodeName()))
+							{
+								parseSpawnDropZoneDrops((L2SpawnDropZone) temp, cd);
+							}
 						}
+						
 						if (checkId(zoneId))
 							_log.config("Caution: Zone (" + zoneId + ") from file: " + f.getName() + " overrides previos definition.");
 						
@@ -415,6 +436,72 @@ public class ZoneManager
 		}
 		else
 			map.put(id, zone);
+	}
+	private static void parseSpawnDropZoneDrops(L2SpawnDropZone zone, Node dropsNode)
+	{
+		for (Node cat = dropsNode.getFirstChild(); cat != null; cat = cat.getNextSibling())
+		{
+			if (!"category".equalsIgnoreCase(cat.getNodeName()))
+				continue;
+
+			final NamedNodeMap catAttrs = cat.getAttributes();
+
+			final String name = catAttrs.getNamedItem("name").getNodeValue();
+			final int chance = Integer.parseInt(catAttrs.getNamedItem("chance").getNodeValue());
+
+			final ZoneDropCategory category = new ZoneDropCategory(name, chance);
+
+			for (Node itemNode = cat.getFirstChild(); itemNode != null; itemNode = itemNode.getNextSibling())
+			{
+				if (!"item".equalsIgnoreCase(itemNode.getNodeName()))
+					continue;
+
+				final NamedNodeMap itemAttrs = itemNode.getAttributes();
+
+				final int itemId = Integer.parseInt(itemAttrs.getNamedItem("id").getNodeValue());
+				final int min = Integer.parseInt(itemAttrs.getNamedItem("min").getNodeValue());
+				final int max = Integer.parseInt(itemAttrs.getNamedItem("max").getNodeValue());
+				final int itemChance = Integer.parseInt(itemAttrs.getNamedItem("chance").getNodeValue());
+
+				category.addItem(new ZoneDropItemData(itemId, min, max, itemChance));
+			}
+
+			zone.addDropCategory(category);
+		}
+	}
+	private static void parseSpawnDropZoneSpawns(L2SpawnDropZone zone, Node spawnsNode)
+	{
+		for (Node n = spawnsNode.getFirstChild(); n != null; n = n.getNextSibling())
+		{
+			if ("monster".equalsIgnoreCase(n.getNodeName()))
+			{
+				final NamedNodeMap attrs = n.getAttributes();
+
+				final int npcId = Integer.parseInt(attrs.getNamedItem("npcId").getNodeValue());
+				final int heading = getInt(attrs, "heading", 0);
+				final int respawn = getInt(attrs, "respawn", 60);
+
+				zone.addMonsterTemplate(new ZoneNpcTemplateData(npcId, heading, respawn));
+			}
+			else if ("raidboss".equalsIgnoreCase(n.getNodeName()))
+			{
+				final NamedNodeMap attrs = n.getAttributes();
+
+				final int npcId = Integer.parseInt(attrs.getNamedItem("npcId").getNodeValue());
+				final int heading = getInt(attrs, "heading", 0);
+				final int respawn = getInt(attrs, "respawn", 300);
+
+				zone.addRaidBossTemplate(new ZoneNpcTemplateData(npcId, heading, respawn));
+			}
+			
+		}
+	}
+	
+
+	private static int getInt(NamedNodeMap attrs, String name, int defaultValue)
+	{
+		final Node node = attrs.getNamedItem(name);
+		return (node == null) ? defaultValue : Integer.parseInt(node.getNodeValue());
 	}
 	
 	/**

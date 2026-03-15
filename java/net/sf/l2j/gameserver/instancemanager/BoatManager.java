@@ -146,6 +146,9 @@ public class BoatManager
 	{
 		for (Player player : L2World.getInstance().getPlayers())
 		{
+			if(player == null)
+				continue;
+			
 			double dx = (double) player.getX() - point1.x;
 			double dy = (double) player.getY() - point1.y;
 			

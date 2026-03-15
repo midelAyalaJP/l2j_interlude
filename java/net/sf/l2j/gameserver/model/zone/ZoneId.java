@@ -35,7 +35,8 @@ public enum ZoneId
 	VIP_ZONE(26),
 	FARM_HWID(27),
 	FARM_HWID_FLAG(28),
-	TIME_FARM_ZONE(29);
+	TIME_FARM_ZONE(29),
+	DROP_ZONE(30);
 	
 	private final int _id;
 	

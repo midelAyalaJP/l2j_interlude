@@ -14,6 +14,7 @@ import net.sf.l2j.event.lastman.LMConfig;
 import net.sf.l2j.event.tournament.ArenaConfig;
 import net.sf.l2j.event.tvt.TvTConfig;
 import net.sf.l2j.fusionitems.FusionItemData;
+import net.sf.l2j.gameserver.ThreadPool;
 import net.sf.l2j.gameserver.cache.CrestCache;
 import net.sf.l2j.gameserver.cache.HtmCache;
 import net.sf.l2j.gameserver.datatables.AdminCommandAccessRights;
@@ -42,6 +43,7 @@ import net.sf.l2j.gameserver.model.L2World;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
+import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.hwid.HwidConfig;
 
@@ -341,6 +343,26 @@ public class AdminAdmin implements IAdminCommandHandler
 					{
 						ZoneManager.getInstance().reload();
 						activeChar.sendMessage("Zones have been reloaded.");
+					}
+					else if (type.startsWith("dropzone"))
+					{
+						ThreadPool.schedule(() ->
+						{
+							for (L2SpawnDropZone temp : ZoneManager.getInstance().getAllZones(L2SpawnDropZone.class))
+							{
+								if (temp != null)
+								{
+									if (temp.isReplaceExistingSpawns())
+										temp.replaceExistingSpawnsNow();
+								}
+							}
+						}, 1000 * 15);
+						
+						
+				
+						ZoneManager.getInstance().reload();
+						activeChar.sendMessage("Zones have been reloaded.");
+						activeChar.sendMessage("Drops Zones have been reloaded.");
 					}
 					else if (type.startsWith("roulette"))
 					{

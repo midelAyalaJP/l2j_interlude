@@ -22,6 +22,7 @@ import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.model.zone.type.L2ArenaZone;
 import net.sf.l2j.gameserver.model.zone.type.L2ClanHallZone;
 import net.sf.l2j.gameserver.model.zone.type.L2PvPEventZone;
+import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 import net.sf.l2j.gameserver.model.zone.type.L2TownZone;
 import net.sf.l2j.gameserver.xmlfactory.XMLDocumentFactory;
 
@@ -264,6 +265,9 @@ public class MapRegionTable
 		{
 			Player player = ((Player) activeChar);
 			
+			final L2SpawnDropZone deathZone = player.getDeathSpawnDropZone();
+			if ((deathZone != null) && (deathZone.getReviveLoc() != null))
+				return deathZone.getReviveLoc();
 			// If in Monster Derby Track
 			if (player.isInsideZone(ZoneId.MONSTER_TRACK))
 				return new Location(12661, 181687, -3560);
