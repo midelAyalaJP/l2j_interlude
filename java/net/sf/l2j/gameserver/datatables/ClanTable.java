@@ -268,7 +268,7 @@ public class ClanTable
 		if (clan == null)
 			return;
 		
-		ThreadPool.schedule(new Runnable()
+		ThreadPool.schedule("ClanTable: destroyClan Task", new Runnable()
 		{
 			@Override
 			public void run()
