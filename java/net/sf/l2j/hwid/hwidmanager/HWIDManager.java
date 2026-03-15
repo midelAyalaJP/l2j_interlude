@@ -10,10 +10,9 @@ import java.util.logging.Logger;
 import net.sf.l2j.gameserver.ConnectionPool;
 import net.sf.l2j.gameserver.network.L2GameClient;
 
-
 public class HWIDManager
 {
-	protected static Logger	_log = Logger.getLogger(HWIDManager.class.getName());
+	protected static Logger _log = Logger.getLogger(HWIDManager.class.getName());
 	private static HWIDManager _instance;
 	public static Map<Integer, HWIDInfoList> _listHWID;
 	
@@ -35,57 +34,33 @@ public class HWIDManager
 	
 	private static void load()
 	{
-		try
+		final String sql = "SELECT HWID, WindowsCount, Account, PlayerID, LockType FROM hwid_info";
+		
+		try (Connection con = ConnectionPool.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rset = ps.executeQuery())
 		{
-			Connection con = ConnectionPool.getConnection();
-			Throwable localThrowable2 = null;
-			try
+			int counterHWIDInfo = 0;
+			
+			while (rset.next())
 			{
-				PreparedStatement statement = con.prepareStatement("SELECT * FROM hwid_info");
-				ResultSet rset = statement.executeQuery();
-				int counterHWIDInfo = 0;
-				while (rset.next())
+				HWIDInfoList hInfo = new HWIDInfoList(counterHWIDInfo);
+				hInfo.setHwids(rset.getString("HWID"));
+				hInfo.setCount(rset.getInt("WindowsCount"));
+				hInfo.setLogin(rset.getString("Account"));
+				hInfo.setPlayerID(rset.getInt("PlayerID"));
+				
+				String lockType = rset.getString("LockType");
+				if (lockType != null)
 				{
-					HWIDInfoList hInfo = new HWIDInfoList(counterHWIDInfo);
-					hInfo.setHwids(rset.getString("HWID"));
-					hInfo.setCount(rset.getInt("WindowsCount"));
-					hInfo.setLogin(rset.getString("Account"));
-					hInfo.setPlayerID(rset.getInt("PlayerID"));
-					hInfo.setLockType(HWIDInfoList.LockType.valueOf(rset.getString("LockType")));
-					_listHWID.put(Integer.valueOf(counterHWIDInfo), hInfo);
-					counterHWIDInfo++;
+					hInfo.setLockType(HWIDInfoList.LockType.valueOf(lockType));
 				}
-			}
-			catch (Throwable localThrowable1)
-			{
-				localThrowable2 = localThrowable1;
-				throw localThrowable1;
-			}
-			finally
-			{
-				if (con != null)
-				{
-					if (localThrowable2 != null)
-					{
-						try
-						{
-							con.close();
-						}
-						catch (Throwable x2)
-						{
-							localThrowable2.addSuppressed(x2);
-						}
-					}
-					else
-					{
-						con.close();
-					}
-				}
+				
+				_listHWID.put(counterHWIDInfo, hInfo);
+				counterHWIDInfo++;
 			}
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			_log.info("Erro ao carregar hwid_info" + e);
 		}
 	}
 	
@@ -98,7 +73,7 @@ public class HWIDManager
 	{
 		updateHWIDInfo(client, windowscount, HWIDInfoList.LockType.NONE);
 	}
-
+	
 	public static void updateHWIDInfo(L2GameClient client, int windowsCount, HWIDInfoList.LockType lockType)
 	{
 		int counterHwidInfo = _listHWID.size();
@@ -108,7 +83,7 @@ public class HWIDManager
 		{
 			if (!_listHWID.get(Integer.valueOf(i)).getHWID().equals(client.getHWID()))
 				continue;
-
+			
 			isFound = true;
 			counterHwidInfo = i;
 			break;
@@ -229,7 +204,7 @@ public class HWIDManager
 	{
 		if (_listHWID.size() == 0)
 			return false;
-
+		
 		boolean result = false;
 		
 		for (int i = 0; i < _listHWID.size(); i++)
@@ -241,19 +216,19 @@ public class HWIDManager
 				case 2:
 					if ((client.getPlayerId() == 0) || (_listHWID.get(Integer.valueOf(i)).getPlayerID() != client.getPlayerId()))
 						continue;
-
+					
 					if (_listHWID.get(Integer.valueOf(i)).getHWID().equals(client.getHWID()))
 						return false;
-
+					
 					result = true;
 					break;
 				case 3:
 					if (!_listHWID.get(Integer.valueOf(i)).getLogin().equals(client.getLoginName()))
 						continue;
-	
+					
 					if (_listHWID.get(Integer.valueOf(i)).getHWID().equals(client.getHWID()))
 						return false;
-
+					
 					result = true;
 			}
 			
@@ -266,15 +241,15 @@ public class HWIDManager
 	{
 		if (_listHWID.size() == 0)
 			return -1;
-
+		
 		for (int i = 0; i < _listHWID.size(); i++)
 		{
 			if (!_listHWID.get(Integer.valueOf(i)).getHWID().equals(client.getHWID()))
 				continue;
-
+			
 			if (_listHWID.get(Integer.valueOf(i)).getHWID().equals(""))
 				return -1;
-
+			
 			return _listHWID.get(Integer.valueOf(i)).getCount();
 		}
 		

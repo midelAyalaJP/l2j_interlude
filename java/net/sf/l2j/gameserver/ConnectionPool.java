@@ -10,41 +10,79 @@ import org.mariadb.jdbc.MariaDbPoolDataSource;
 
 public final class ConnectionPool
 {
+	private static final CLogger LOGGER = new CLogger(ConnectionPool.class.getName());
+	
+	private static volatile MariaDbPoolDataSource _source;
+	private static volatile boolean _initialized = false;
+	
 	private ConnectionPool()
 	{
 		throw new IllegalStateException("Utility class");
 	}
 	
-	private static final CLogger LOGGER = new CLogger(ConnectionPool.class.getName());
-	
-	private static MariaDbPoolDataSource _source;
-	
-	public static void init()
+	public static synchronized void init()
 	{
+		if (_initialized)
+		{
+			LOGGER.warn("ConnectionPool já foi inicializado. Ignorando nova inicialização.");
+			return;
+		}
+		
 		try
 		{
-			_source = new MariaDbPoolDataSource();
-			_source.setUrl(Config.DATABASE_URL);
+			final MariaDbPoolDataSource source = new MariaDbPoolDataSource();
+			source.setUrl(Config.DATABASE_URL);
 			
-			LOGGER.info("MariaDB ConnectionPool iniciado.");
+			// Teste inicial simples para falhar no boot se a conexão estiver inválida.
+			try (Connection con = source.getConnection())
+			{
+				if ((con == null) || !con.isValid(2))
+					throw new SQLException("Falha na validação inicial da conexão.");
+			}
+			
+			_source = source;
+			_initialized = true;
+			
+			LOGGER.info("MariaDB ConnectionPool iniciado com sucesso.");
 		}
 		catch (SQLException e)
 		{
 			LOGGER.error("Erro ao inicializar o pool MariaDB.", e);
-		}
-	}
-	
-	public static void shutdown()
-	{
-		if (_source != null)
-		{
-			_source.close();
-			_source = null;
+			shutdown();
 		}
 	}
 	
 	public static Connection getConnection() throws SQLException
 	{
-		return _source.getConnection();
+		final MariaDbPoolDataSource source = _source;
+		if (!_initialized || (source == null))
+			throw new SQLException("ConnectionPool não inicializado.");
+		
+		return source.getConnection();
+	}
+	
+	public static synchronized void shutdown()
+	{
+		final MariaDbPoolDataSource source = _source;
+		_source = null;
+		_initialized = false;
+		
+		if (source != null)
+		{
+			try
+			{
+				source.close();
+				LOGGER.info("MariaDB ConnectionPool finalizado.");
+			}
+			catch (Exception e)
+			{
+				LOGGER.error("Erro ao finalizar o pool MariaDB.", e);
+			}
+		}
+	}
+	
+	public static boolean isInitialized()
+	{
+		return _initialized && (_source != null);
 	}
 }
