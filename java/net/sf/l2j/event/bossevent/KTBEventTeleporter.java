@@ -2,8 +2,8 @@ package net.sf.l2j.event.bossevent;
 
 import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.gameserver.ThreadPool;
-import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.actor.L2Summon;
+import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.entity.Duel.DuelState;
 import net.sf.l2j.gameserver.taskmanager.PvpFlagTaskManager;
 
