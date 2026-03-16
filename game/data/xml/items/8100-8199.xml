@@ -1567,6 +1567,7 @@
 		<set name="weight" val="3" />
 		<set name="is_stackable" val="true" />
 		<set name="item_skill" val="2234-1" />
+		<set name="handler" val="ItemSkills"/>
 	</item>
 	<item id="8193" type="EtcItem" name="Fisherman's Potion - Green">
 		<set name="default_action" val="skill_reduce" />

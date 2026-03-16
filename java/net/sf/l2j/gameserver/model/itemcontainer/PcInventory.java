@@ -10,8 +10,10 @@ import java.util.logging.Level;
 import net.sf.l2j.dolls.DollsTable;
 import net.sf.l2j.gameserver.ConnectionPool;
 import net.sf.l2j.gameserver.datatables.ItemTable;
+import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.instancemanager.custom.AutoGoldBar;
 import net.sf.l2j.gameserver.model.L2Object;
+import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance.ItemLocation;
@@ -37,6 +39,38 @@ public class PcInventory extends Inventory
 	private final Player _owner;
 	private ItemInstance _adena;
 	private ItemInstance _ancientAdena;
+	private final int BREAKING_ARROW_ITEM_ID = 8192;
+	private final int BREAKING_ARROW_SKILL_ID = 2234;
+	private final int BREAKING_ARROW_SKILL_LEVEL = 1;
+	
+	private void refreshBreakingArrowSkill()
+	{
+		if (_owner == null)
+			return;
+		
+		final boolean hasBreakingArrow = getItemByItemId(BREAKING_ARROW_ITEM_ID) != null;
+		
+		if (hasBreakingArrow)
+		{
+			if (_owner.getSkillLevel(BREAKING_ARROW_SKILL_ID) <= 0)
+			{
+				final L2Skill skill = SkillTable.getInstance().getInfo(BREAKING_ARROW_SKILL_ID, BREAKING_ARROW_SKILL_LEVEL);
+				if (skill != null)
+				{
+					_owner.addSkill(skill, false);
+					_owner.sendSkillList();
+				}
+			}
+		}
+		else
+		{
+			if (_owner.getSkillLevel(BREAKING_ARROW_SKILL_ID) > 0)
+			{
+				_owner.removeSkill(BREAKING_ARROW_SKILL_ID, false);
+				_owner.sendSkillList();
+			}
+		}
+	}
 	
 	public PcInventory(Player owner)
 	{
@@ -404,6 +438,11 @@ public class PcInventory extends Inventory
 		}
 		
 		DollsTable.getSkillRune(actor, item);
+		
+		if (item.getItemId() == BREAKING_ARROW_ITEM_ID)
+			refreshBreakingArrowSkill();
+
+		
 		return item;
 	}
 	
@@ -449,6 +488,8 @@ public class PcInventory extends Inventory
 			AutoGoldBar.getInstance().add(actor);
 		}
 		DollsTable.getSkillRune(actor, item);
+		if (itemId == BREAKING_ARROW_ITEM_ID)
+			refreshBreakingArrowSkill();
 		return item;
 	}
 	
@@ -478,6 +519,8 @@ public class PcInventory extends Inventory
 		}
 		
 		DollsTable.getSkillRune(actor, item);
+		if (item.getItemId() == BREAKING_ARROW_ITEM_ID)
+			refreshBreakingArrowSkill();
 		return item;
 	}
 	
@@ -565,6 +608,9 @@ public class PcInventory extends Inventory
 		if (_ancientAdena != null && _ancientAdena.getCount() <= 0)
 			_ancientAdena = null;
 		
+		if (item != null && item.getItemId() == BREAKING_ARROW_ITEM_ID)
+			refreshBreakingArrowSkill();
+		
 		return item;
 	}
 	
@@ -626,6 +672,9 @@ public class PcInventory extends Inventory
 		if (_ancientAdena != null && (_ancientAdena.getCount() <= 0 || _ancientAdena.getOwnerId() != getOwnerId()))
 			_ancientAdena = null;
 		
+		if (item.getItemId()== BREAKING_ARROW_ITEM_ID)
+			refreshBreakingArrowSkill();
+		
 		return item;
 	}
 	
@@ -649,6 +698,9 @@ public class PcInventory extends Inventory
 		if (_ancientAdena != null && (_ancientAdena.getCount() <= 0 || _ancientAdena.getOwnerId() != getOwnerId()))
 			_ancientAdena = null;
 		
+		if (item.getItemId()== BREAKING_ARROW_ITEM_ID)
+			refreshBreakingArrowSkill();
+		
 		return item;
 	}
 	
@@ -670,6 +722,9 @@ public class PcInventory extends Inventory
 			_adena = null;
 		else if (item.getItemId() == ANCIENT_ADENA_ID)
 			_ancientAdena = null;
+		
+		if (item.getItemId()== BREAKING_ARROW_ITEM_ID)
+			refreshBreakingArrowSkill();
 		
 		return super.removeItem(item);
 	}
@@ -693,6 +748,7 @@ public class PcInventory extends Inventory
 		super.restore();
 		_adena = getItemByItemId(ADENA_ID);
 		_ancientAdena = getItemByItemId(ANCIENT_ADENA_ID);
+		refreshBreakingArrowSkill();
 	}
 	
 	public static int[][] restoreVisibleInventory(int objectId)
