@@ -15128,7 +15128,7 @@
 		<set name="height" val="25"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2CastleDoormen"/>
+		<set name="type" val="L2ClanHallDoormen"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
