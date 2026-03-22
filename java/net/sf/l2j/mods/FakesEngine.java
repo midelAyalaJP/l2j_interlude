@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import net.sf.l2j.gameserver.handler.AdminCommandHandler;
 import net.sf.l2j.mods.admin.AdminFakePlayer;
+import net.sf.l2j.mods.data.ClanAllyCrestData;
 import net.sf.l2j.mods.data.FakeChatData;
 import net.sf.l2j.mods.data.FakeNameData;
 import net.sf.l2j.mods.data.FakePlayerData;
@@ -43,6 +44,7 @@ public class FakesEngine
 		FakePrivateSellData.getInstance();
 		FakePrivateBuyData.getInstance();
 		SymbolsData.getInstance();
+		ClanAllyCrestData.getInstance();
 	}
 	
 	private static void registerAdmin()

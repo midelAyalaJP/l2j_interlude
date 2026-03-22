@@ -25,6 +25,7 @@ import net.sf.l2j.gameserver.network.serverpackets.PledgeShowInfoUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.PledgeShowMemberListAll;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.network.serverpackets.UserInfo;
+import net.sf.l2j.mods.holder.ClanAllyCrestHolder;
 
 public class ClanTable
 {
@@ -72,7 +73,7 @@ public class ClanTable
 				
 				// If character expire time has been reached while server was off, keep it to 0.
 				final long charExpireTime = result.getLong("char_penalty_expiry_time");
-				//if (charExpireTime + Config.ALT_CLAN_JOIN_DAYS * 86400000L > System.currentTimeMillis())
+				// if (charExpireTime + Config.ALT_CLAN_JOIN_DAYS * 86400000L > System.currentTimeMillis())
 				if (charExpireTime + Config.ALT_CLAN_JOIN_DAYS * 60 * 1000L > System.currentTimeMillis())
 					clan.setCharPenaltyExpiryTime(charExpireTime);
 				
@@ -156,8 +157,8 @@ public class ClanTable
 		
 		if (System.currentTimeMillis() < player.getClanCreateExpiryTime())
 		{
-			//player.sendPacket(SystemMessageId.YOU_MUST_WAIT_XX_DAYS_BEFORE_CREATING_A_NEW_CLAN);
-			player.sendMessage("You need Wait " + Config.ALT_CLAN_CREATE_DAYS + " minute(s) for create new clan..");		
+			// player.sendPacket(SystemMessageId.YOU_MUST_WAIT_XX_DAYS_BEFORE_CREATING_A_NEW_CLAN);
+			player.sendMessage("You need Wait " + Config.ALT_CLAN_CREATE_DAYS + " minute(s) for create new clan..");
 			return null;
 		}
 		
@@ -189,13 +190,52 @@ public class ClanTable
 		player.setPledgeClass(L2ClanMember.calculatePledgeClass(player));
 		player.setClanPrivileges(L2Clan.CP_ALL);
 		
-		_clans.put(clan.getClanId(), clan);
-		
 		player.sendPacket(new PledgeShowMemberListAll(clan, 0));
 		player.sendPacket(new UserInfo(player));
 		player.sendPacket(SystemMessageId.CLAN_CREATED);
 		return clan;
 	}
+	
+	public L2Clan createPhantomClan(Player leaderPlayer, ClanAllyCrestHolder holder)
+	{
+		if (leaderPlayer == null || holder == null)
+			return null;
+		
+		if (getClanByName(holder.getName()) != null)
+			return null;
+		
+		final L2Clan clan = new L2Clan(IdFactory.getInstance().getNextId(), holder.getName());
+		final L2ClanMember leader = new L2ClanMember(clan, leaderPlayer);
+		
+		clan.setLeader(leader);
+		leader.setPlayerInstance(leaderPlayer);
+		
+		clan.setName(holder.getName());
+		clan.setLevel(holder.getLevel());
+		clan.addReputationScore(holder.getReputationScore());
+		
+		leaderPlayer.setClan(clan);
+		leaderPlayer.setPledgeClass(L2ClanMember.calculatePledgeClass(leaderPlayer));
+		leaderPlayer.setClanPrivileges(L2Clan.CP_ALL);
+		
+		_clans.put(clan.getClanId(), clan);
+		createPhantomAlly(clan, holder, clan.getClanId());
+
+		return clan;
+	}
+	
+	private static void createPhantomAlly(L2Clan clan, ClanAllyCrestHolder holder, int id)
+	{
+
+		clan.setAllyName(holder.getAllyName());
+		clan.setAllyId(id);
+		clan.setAllyPenaltyExpiryTime(0, 0);
+		clan.changeAllyCrest(clan.getAllyCrestId(), true);
+		clan.store();
+		clan.updateClanInDB();
+	}
+	
+	
 	
 	public synchronized void destroyClan(int clanId)
 	{

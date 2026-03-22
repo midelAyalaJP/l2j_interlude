@@ -134,6 +134,9 @@ public class AdminFakePlayer implements IAdminCommandHandler
 		admin.sendMessage("High Class FakePlayer spawned: " + fake.getName() + " (" + classId.name().replace("_", " ") + ")");
 		
 		fake.onActionShift(admin);
+		
+		
+		
 	}
 	
 	private static void handleSpawnRandomLow(Player admin)

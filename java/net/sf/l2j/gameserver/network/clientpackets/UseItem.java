@@ -312,33 +312,11 @@ public final class UseItem extends L2GameClientPacket
 				return;
 		}
 		
-		// if ((item.getItemId() == 8663 || item.getItemId() == 4422 || item.getItemId() == 4423 || item.getItemId() == 4424) && ((activeChar._inEventTvT && (TvT.is_teleport() || TvT.is_started())) || (activeChar._inEventCTF && (CTF.is_teleport() || CTF.is_started()))))
-		// return;
-		
-		// if ((item.getItemId() == 1538 || item.getItemId() == 3958 || item.getItemId() == 5858 || item.getItemId() == 5859 || item.getItemId() == 9156) && ((activeChar._inEventTvT && TvT.is_started() && !Config.TVT_ALLOW_POTIONS) || (activeChar._inEventCTF && CTF.is_started() &&
-		// !Config.CTF_ALLOW_POTIONS)))
-		// {
-		// activeChar.sendMessage("You can not use this item in Combat/Event mode..");
-		// return;
-		// }
-		// if ((item.getItemId() == 1538 || item.getItemId() == 3958 || item.getItemId() == 5858 || item.getItemId() == 5859 || item.getItemId() == 9156) && (activeChar._inEventCTF && activeChar._haveFlagCTF))
-		// {
-		// activeChar.sendMessage("This item can not be used Potions when you have the flag..");
-		// return;
-		// }
+
 		
 		if (item.isEquipable())
 		{
-			// if (activeChar.isCastingNow() || activeChar.isCastingSimultaneouslyNow())
-			// if (activeChar.isCastingNow() || activeChar.isCastingSimultaneouslyNow() || (activeChar._inEventCTF && activeChar._haveFlagCTF && (item.getItem().getBodyPart() == Item.SLOT_LR_HAND || item.getItem().getBodyPart() == Item.SLOT_L_HAND || item.getItem().getBodyPart() ==
-			// Item.SLOT_R_HAND)))
-			// {
-			// if (activeChar._inEventCTF && activeChar._haveFlagCTF)
-			// activeChar.sendMessage("This item can not be equipped when you have the flag.");
-			// else
-			// activeChar.sendPacket(SystemMessageId.CANNOT_USE_ITEM_WHILE_USING_MAGIC);
-			// return;
-			// }
+		
 			if (activeChar.isCastingNow() || activeChar.isCastingSimultaneouslyNow())
 			{
 				activeChar.sendPacket(SystemMessageId.CANNOT_USE_ITEM_WHILE_USING_MAGIC);

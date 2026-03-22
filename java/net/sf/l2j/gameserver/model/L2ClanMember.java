@@ -439,6 +439,8 @@ public class L2ClanMember
 		return pledgeClass;
 	}
 	
+
+	
 	public void saveApprenticeAndSponsor(int apprentice, int sponsor)
 	{
 		try (Connection con = ConnectionPool.getConnection())

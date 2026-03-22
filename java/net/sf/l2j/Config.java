@@ -2046,46 +2046,6 @@ public final class Config
 		WYVERN_REQUIRED_LEVEL = npcs.getProperty("RequiredStriderLevel", 55);
 		WYVERN_REQUIRED_CRYSTALS = npcs.getProperty("RequiredCrystalsNumber", 10);
 		
-		// RAID_HP_REGEN_MULTIPLIER = npcs.getProperty("RaidHpRegenMultiplier", 1.);
-		// RAID_MP_REGEN_MULTIPLIER = npcs.getProperty("RaidMpRegenMultiplier", 1.);
-		// RAID_DEFENCE_MULTIPLIER = npcs.getProperty("RaidDefenceMultiplier", 1.);
-		// RAID_MINION_RESPAWN_TIMER = npcs.getProperty("RaidMinionRespawnTime", 300000);
-		
-		// RAID_DISABLE_CURSE = npcs.getProperty("DisableRaidCurse", false);
-		// RAID_CHAOS_TIME = npcs.getProperty("RaidChaosTime", 30);
-		// GRAND_CHAOS_TIME = npcs.getProperty("GrandChaosTime", 30);
-		// MINION_CHAOS_TIME = npcs.getProperty("MinionChaosTime", 30);
-		
-		// SPAWN_INTERVAL_AQ = npcs.getProperty("AntQueenSpawnInterval", 36);
-		// RANDOM_SPAWN_TIME_AQ = npcs.getProperty("AntQueenRandomSpawn", 17);
-		
-		// SPAWN_INTERVAL_ANTHARAS = npcs.getProperty("AntharasSpawnInterval", 264);
-		// RANDOM_SPAWN_TIME_ANTHARAS = npcs.getProperty("AntharasRandomSpawn", 72);
-		// WAIT_TIME_ANTHARAS = npcs.getProperty("AntharasWaitTime", 30) * 60000;
-		
-		// SPAWN_INTERVAL_BAIUM = npcs.getProperty("BaiumSpawnInterval", 168);
-		// RANDOM_SPAWN_TIME_BAIUM = npcs.getProperty("BaiumRandomSpawn", 48);
-		
-		// SPAWN_INTERVAL_CORE = npcs.getProperty("CoreSpawnInterval", 60);
-		// RANDOM_SPAWN_TIME_CORE = npcs.getProperty("CoreRandomSpawn", 23);
-		
-		// SPAWN_INTERVAL_FRINTEZZA = npcs.getProperty("FrintezzaSpawnInterval", 48);
-		// RANDOM_SPAWN_TIME_FRINTEZZA = npcs.getProperty("FrintezzaRandomSpawn", 8);
-		// WAIT_TIME_FRINTEZZA = npcs.getProperty("FrintezzaWaitTime", 1) * 60000;
-		
-		// SPAWN_INTERVAL_ORFEN = npcs.getProperty("OrfenSpawnInterval", 48);
-		// RANDOM_SPAWN_TIME_ORFEN = npcs.getProperty("OrfenRandomSpawn", 20);
-		
-		// SPAWN_INTERVAL_SAILREN = npcs.getProperty("SailrenSpawnInterval", 36);
-		// RANDOM_SPAWN_TIME_SAILREN = npcs.getProperty("SailrenRandomSpawn", 24);
-		// WAIT_TIME_SAILREN = npcs.getProperty("SailrenWaitTime", 5) * 60000;
-		
-		// SPAWN_INTERVAL_VALAKAS = npcs.getProperty("ValakasSpawnInterval", 264);
-		// RANDOM_SPAWN_TIME_VALAKAS = npcs.getProperty("ValakasRandomSpawn", 72);
-		// WAIT_TIME_VALAKAS = npcs.getProperty("ValakasWaitTime", 30) * 60000;
-		
-		// SPAWN_INTERVAL_ZAKEN = npcs.getProperty("ZakenSpawnInterval", 60);
-		// RANDOM_SPAWN_TIME_ZAKEN = npcs.getProperty("ZakenRandomSpawn", 20);
 		
 		GUARD_ATTACK_AGGRO_MOB = npcs.getProperty("GuardAttackAggroMob", false);
 		MAX_DRIFT_RANGE = npcs.getProperty("MaxDriftRange", 300);

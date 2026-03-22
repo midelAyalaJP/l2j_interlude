@@ -106,7 +106,7 @@ public class Siege implements Siegable
 		if (!_isInProgress)
 		{
 			
-			
+	
 			if (getAttackerClans().isEmpty())
 			{
 				SystemMessage sm;
@@ -1143,15 +1143,7 @@ public class Siege implements Siegable
 		}
 	}
 	
-	/**
-	 * Set the date for the next siege.
-	 */
-	/*
-	 * private void setNextSiegeDate() { final Calendar siegeDate = getCastle().getSiegeDate(); if (siegeDate.getTimeInMillis() < System.currentTimeMillis()) siegeDate.setTimeInMillis(System.currentTimeMillis()); switch (getCastle().getCastleId()) { case 3: case 4: case 6: case 7:
-	 * siegeDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); break; default: siegeDate.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY); break; } // Set next siege date if siege has passed ; add 14 days (2 weeks). siegeDate.add(Calendar.WEEK_OF_YEAR, 2); // Set default hour to 18:00. This can be changed
-	 * - only once - by the castle leader via the chamberlain. siegeDate.set(Calendar.HOUR_OF_DAY, 18); siegeDate.set(Calendar.MINUTE, 0); siegeDate.set(Calendar.SECOND, 0); // Send message and allow registration for next siege.
-	 * Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.S1_ANNOUNCED_SIEGE_TIME).addString(getCastle().getName())); _isRegistrationOver = false; }
-	 */
+ 
 	private void setNextSiegeDate()
 	{
 		final Calendar siegeDate = getCastle().getSiegeDate();

@@ -74,29 +74,41 @@ public abstract class AbstractNpcInfo extends L2GameServerPacket
 				_collisionRadius = _npc.getCollisionRadius();
 			}
 			
+			// Name
 			if (_npc.getTemplate().isUsingServerSideName())
 				_name = _npc.getName();
 			
-			if (_npc.getInstance() != null)
+			// Title base
+			String title = null;
+			
+			if (_npc.getTemplate().isUsingServerSideTitle())
 			{
-			    if (_npc.getTemplate().isUsingServerSideTitle())
-			        _title = _npc.getTitle();
+				// Em instância, normalmente o título dinâmico fica no próprio NPC.
+				// Fora de instância, se existir título customizado no NPC, usa ele;
+				// caso contrário, cai para o título do template.
+				if (_npc.getInstance() != null)
+					title = _npc.getTitle();
+				else
+					title = (_npc.getTitle() != null && !_npc.getTitle().isEmpty()) ? _npc.getTitle() : _npc.getTemplate().getTitle();
 			}
-			else
+			
+			// Show monster level + aggro, inclusive em instância
+			if (Config.SHOW_NPC_LVL && (_npc instanceof L2MonsterInstance))
 			{
-			    if (cha.getTemplate().isUsingServerSideTitle())
-			        _title = cha.getTemplate().getTitle();
-
-			    if (Config.SHOW_NPC_LVL && (cha instanceof L2MonsterInstance))
-			    {
-			        String t = "Lv " + _npc.getLevel() + (_npc.getTemplate().getAggroRange() > 0 ? "*" : "");
-
-			        if (_title != null)
-			            t += " " + _title;
-
-			        _title = t;
-			    }
+				StringBuilder sb = new StringBuilder();
+				sb.append("Lv ").append(_npc.getLevel());
+				
+				if (_npc.getTemplate().getAggroRange() > 0)
+					sb.append("*");
+				
+				if (title != null && !title.isEmpty())
+					sb.append(" ").append(title);
+				
+				title = sb.toString();
 			}
+			
+			_title = title;
+			
 			// NPC crest system
 			if (Config.SHOW_NPC_CREST && _npc.getCastle() != null && _npc.getCastle().getOwnerId() != 0)
 			{

@@ -46,6 +46,7 @@ import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.hwid.HwidConfig;
+import net.sf.l2j.mods.data.ClanAllyCrestData;
 
 /**
  * This class handles following admin commands:
@@ -81,6 +82,9 @@ public class AdminAdmin implements IAdminCommandHandler
 	{
 		if (command.startsWith("admin_admin"))
 			showMainPage(activeChar, command);
+		if (command.startsWith("admin_admin1"))
+			ClanAllyCrestData.getInstance().siegeStart(null);
+		
 		else if (command.startsWith("admin_gmlist"))
 		{
 			final boolean visibleStatus = GmListTable.getInstance().isGmVisible(activeChar);

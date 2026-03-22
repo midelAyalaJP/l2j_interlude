@@ -101,7 +101,6 @@ public class L2LoginServer
 		StringUtil.printSection("LoginController");
 		LoginController.load();
 		GameServerTable.getInstance();
-		
 		StringUtil.printSection("Ban List");
 		loadBanFile();
 		

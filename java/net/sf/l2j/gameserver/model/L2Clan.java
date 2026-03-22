@@ -891,7 +891,7 @@ public class L2Clan
 			statement.setLong(8, _dissolvingExpiryTime);
 			statement.setInt(9, _clanId);
 			statement.execute();
-			statement.close();
+ 
 		}
 		catch (Exception e)
 		{
@@ -1438,7 +1438,7 @@ public class L2Clan
 			statement.setString(3, subPledgeName);
 			statement.setInt(4, (pledgeType != -1) ? leaderId : 0);
 			statement.execute();
-			statement.close();
+
 			
 			subPledge = new SubPledge(pledgeType, subPledgeName, leaderId);
 			_subPledges.put(pledgeType, subPledge);
@@ -1506,7 +1506,7 @@ public class L2Clan
 			statement.setInt(3, _clanId);
 			statement.setInt(4, pledgeType);
 			statement.execute();
-			statement.close();
+
 		}
 		catch (Exception e)
 		{
@@ -1568,7 +1568,7 @@ public class L2Clan
 				statement.setInt(3, privs);
 				statement.setInt(4, privs);
 				statement.execute();
-				statement.close();
+		
 			}
 			catch (Exception e)
 			{
@@ -1593,7 +1593,7 @@ public class L2Clan
 				statement.setInt(2, rank);
 				statement.setInt(3, privs);
 				statement.execute();
-				statement.close();
+		
 			}
 			catch (Exception e)
 			{

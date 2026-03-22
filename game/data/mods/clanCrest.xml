@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<list>
+	<clan id="1001" name="Samurai" level="8" reputation="25000" allyId="5001" allyName="Empire" clanCrest="Crest_1001.dds" allyCrest="AllyCrest_5001.dds">
+		<war clanId="1002" />
+	</clan>
+
+	<clan id="1002" name="Ronin" level="7" reputation="18000" allyId="5002" allyName="Shadow" clanCrest="Crest_1002.dds" allyCrest="AllyCrest_5002.dds">
+		<war clanId="1001" />
+		<war clanId="1003" />
+	</clan>
+
+	<clan id="1003" name="Shogun" level="6" reputation="12000" allyId="5001" allyName="Empire" clanCrest="Crest_1003.dds" allyCrest="AllyCrest_5001.dds">
+		<war clanId="1002" />
+	</clan>
+</list>
