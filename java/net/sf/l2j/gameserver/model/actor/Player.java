@@ -13714,7 +13714,7 @@ public class Player extends Playable
 		{
 			return _hwid;
 		}
-		_hwid = getClient().getHWID();
+		//_hwid = getClient().getHWID();
 		return _hwid;
 	}
 	

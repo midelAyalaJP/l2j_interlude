@@ -45,7 +45,6 @@ import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.zone.type.L2SpawnDropZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
-import net.sf.l2j.hwid.HwidConfig;
 import net.sf.l2j.mods.data.ClanAllyCrestData;
 
 /**
@@ -240,7 +239,7 @@ public class AdminAdmin implements IAdminCommandHandler
 					}
 					else if (type.startsWith("config"))
 					{
-						HwidConfig.load();
+ 
 						TvTConfig.init();
 						CTFConfig.init();
 						DMConfig.init();

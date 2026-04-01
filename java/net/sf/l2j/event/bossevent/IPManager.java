@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.l2j.gameserver.model.actor.Player;
-import net.sf.l2j.gameserver.network.L2GameClient;
 
 public class IPManager
 {
@@ -75,10 +74,8 @@ public class IPManager
         {
             if (forcedLogOut)
             {
-                L2GameClient client = activeChar.getClient();
-                _log.warning("Multibox Protection: " + client.getHWID() + " was trying to use over " + numberBox + " clients!");
-              //  Util.handleIllegalPlayerAction(activeChar, "Multibox Protection: " + client.getConnection().getInetAddress().getHostAddress() + " was trying to use over " + numberBox + " clients!", 1);
-                activeChar.sendMessage("You break the limit of " + 1 + " box per IP.");
+ 
+                 activeChar.sendMessage("You break the limit of " + 1 + " box per IP.");
             }
             return true;
         }

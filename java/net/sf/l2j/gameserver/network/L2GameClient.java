@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
@@ -40,7 +39,8 @@ import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.L2GameServerPacket;
 import net.sf.l2j.gameserver.network.serverpackets.ServerClose;
 import net.sf.l2j.gameserver.util.FloodProtectors;
-import net.sf.l2j.hwid.Hwid;
+import net.sf.l2j.protection.hwid.HwidDAO;
+import net.sf.l2j.protection.hwid.HwidSession;
 
 /**
  * Represents a client connected on Game Server
@@ -49,7 +49,7 @@ import net.sf.l2j.hwid.Hwid;
 public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> implements Runnable
 {
 	protected static final Logger _log = Logger.getLogger(L2GameClient.class.getName());
-	
+	private final HwidDAO dao = new HwidDAO();
 	public static enum GameClientState
 	{
 		CONNECTED, // client has just connected
@@ -101,8 +101,6 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	{
 		byte[] key = BlowFishKeygen.getRandomKey();
 		_crypt.setKey(key);
-		if (Hwid.isProtectionOn())
-			key = Hwid.getKey(key);
 		return key;
 	}
 	
@@ -225,7 +223,6 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		if (objid < 0)
 			return -1;
 		
-	 
 		try (Connection con = ConnectionPool.getConnection())
 		{
 			PreparedStatement statement = con.prepareStatement("SELECT clanId FROM characters WHERE obj_id=?");
@@ -450,10 +447,9 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	
 	public void close(L2GameServerPacket gsp)
 	{
-		if (getConnection() == null)
-			return;
+		
 		getConnection().close(gsp);
-		Hwid.removePlayer(this);
+		
 	}
 	
 	/**
@@ -590,9 +586,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	
 	protected class DisconnectTask implements Runnable
 	{
-		/**
-		 * @see java.lang.Runnable#run()
-		 */
+		
 		@Override
 		public void run()
 		{
@@ -696,6 +690,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 							getActiveChar().setOff(true);
 							getActiveChar().setOfflineTesteTime(System.currentTimeMillis());
 						}
+						
 						return;
 					}
 					fast = !getActiveChar().isInCombat() && !getActiveChar().isLocked();
@@ -790,6 +785,9 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 							getActiveChar().broadcastTitleInfo();
 						}
 					}
+					dao.restartAndDisconnetion(getActiveChar());
+					
+					
 					
 					if (getActiveChar().isOnline())
 						getActiveChar().deleteMe();
@@ -981,79 +979,27 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		return false;
 	}
 	
-	// HWID
-	private String _playerName = "";
-	private String _loginName = "";
-	private int _playerId = 0;
-	private String _hwid = "";
-	private int revision = 0;
+	private boolean _hwidAuthed = false;
+	private HwidSession _hwidSession;
 	
-	public final String getHWID()
+	public void setHwidAuthed(boolean val)
 	{
-		return _hwid;
+		_hwidAuthed = val;
 	}
 	
-	public void setHWID(String hwid)
+	public boolean isHwidAuthed()
 	{
-		_hwid = hwid;
+		return _hwidAuthed;
 	}
 	
-	public void setRevision(int revision)
+	public void setHwidSession(HwidSession session)
 	{
-		this.revision = revision;
+		_hwidSession = session;
 	}
 	
-	public int getRevision()
+	public HwidSession getHwidSession()
 	{
-		return this.revision;
+		return _hwidSession;
 	}
 	
-	public final String getPlayerName()
-	{
-		return _playerName;
-	}
-	
-	public void setPlayerName(String name)
-	{
-		_playerName = name;
-	}
-	
-	public void setPlayerId(int plId)
-	{
-		_playerId = plId;
-	}
-	
-	public int getPlayerId()
-	{
-		return _playerId;
-	}
-	
-	public final String getLoginName()
-	{
-		return _loginName;
-	}
-	
-	public void setLoginName(String name)
-	{
-		_loginName = name;
-	}
-	
-	public synchronized static boolean BanedHwid(String hwidban)
-	{
-		boolean result = true;
-		try (Connection con = ConnectionPool.getConnection())
-		{
-			PreparedStatement statement = con.prepareStatement("SELECT hwid FROM banned_hwid WHERE hwid=?");
-			statement.setString(1, hwidban);
-			ResultSet rset = statement.executeQuery();
-			result = rset.next();
-			rset.close();
-			statement.close();
-		}
-		catch (SQLException e)
-		{
-			_log.log(Level.WARNING, "HWIDReload: " + e.getMessage(), e);
-		}
-		return result;
-	}
 }

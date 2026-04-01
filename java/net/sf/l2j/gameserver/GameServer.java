@@ -173,7 +173,6 @@ import net.sf.l2j.gameserver.taskmanager.ShadowItemTaskManager;
 import net.sf.l2j.gameserver.taskmanager.TaskManager;
 import net.sf.l2j.gameserver.taskmanager.WaterTaskManager;
 import net.sf.l2j.gameserver.xmlfactory.XMLDocumentFactory;
-import net.sf.l2j.hwid.Hwid;
 import net.sf.l2j.itemstime.TimeItemData;
 import net.sf.l2j.itemstime.TimedItemManager;
 import net.sf.l2j.launcher.GameServerLauncher;
@@ -382,9 +381,7 @@ public class GameServer
 		{
 			FishingChampionshipManager.getInstance();
 		}
-		
-		Hwid.Init();
-		
+ 
 		StringUtil.printSection("DressMe Data");
 		DressMeData.getInstance();
 		

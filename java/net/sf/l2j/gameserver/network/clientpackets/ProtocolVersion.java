@@ -1,90 +1,139 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
-import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.model.actor.Player;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
+
+import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.serverpackets.KeyPacket;
 import net.sf.l2j.gameserver.network.serverpackets.L2GameServerPacket;
-import net.sf.l2j.hwid.Hwid;
-import net.sf.l2j.hwid.HwidConfig;
+import net.sf.l2j.protection.hwid.HwidManager;
 
 public final class ProtocolVersion extends L2GameClientPacket
 {
-	private int _version;
-	private byte _data[];
-	private String _hwidHdd = "NoHWID-HD";
-	private String _hwidMac = "NoHWID-MAC";
-	private String _hwidCPU = "NoHWID-CPU";
-	private String _hwidPCName = "NoHWID-PCNAME";
-	private String _hwidUserName = "NoHWID-USERNAME";
-	Player player;
-	
-	@Override
-	protected void readImpl()
-	{
-		_version = readD();
-		if (Hwid.isProtectionOn())
-		{
-			if (_buf.remaining() > 260)
-			{
-				_data = new byte[260];
-				readB(_data);
-				if (Hwid.isProtectionOn())
-				{
-					_hwidHdd = readS();
-					_hwidMac = readS();
-					_hwidCPU = readS();
-					_hwidPCName = readS();
-					_hwidUserName = readS();
-				}
-			}
-		}
-		else if (Hwid.isProtectionOn())
-		{
-			getClient().close(new KeyPacket(getClient().enableCrypt()));
-		}
-	}
-	
-	@Override
-	protected void runImpl()
-	{
-		if (_version == -2)
-			getClient().close((L2GameServerPacket) null);
-		else if (_version < Config.MIN_PROTOCOL_REVISION || _version > Config.MAX_PROTOCOL_REVISION)
-		{
-			_log.warning("Client: " + getClient().toString() + " -> Protocol Revision: " + _version + " is invalid. Minimum and maximum allowed are: " + Config.MIN_PROTOCOL_REVISION + " and " + Config.MAX_PROTOCOL_REVISION + ". Closing connection.");
-			getClient().close((L2GameServerPacket) null);
-		}
-		else
-			getClient().sendPacket(new KeyPacket(getClient().enableCrypt()));
-		
-		getClient().setRevision(_version);
-		
-		if (Hwid.isProtectionOn())
-		{
-			if (_hwidHdd.equals("NoGuard") && _hwidMac.equals("NoGuard") && _hwidCPU.equals("NoGuard") && _hwidPCName.equals("NoGuard") && _hwidUserName.equals("NoGuard"))
-			{
-				_log.info("HWID Status: No Client side dlls");
-				getClient().close(new KeyPacket(getClient().enableCrypt()));
-			}
-			
-			switch (HwidConfig.GET_CLIENT_HWID)
-			{
-				case 1:
-					getClient().setHWID(_hwidHdd);
-					break;
-				case 2:
-					getClient().setHWID(_hwidMac);
-					break;
-				case 3:
-					getClient().setHWID(_hwidCPU);
-					break;
-				case 4:
-					getClient().setHWID(_hwidPCName);
-					break;
-				case 5:
-					getClient().setHWID(_hwidCPU + _hwidUserName);
-					break;
-			}
-		}
-	}
+    private static final Logger LOGGER = Logger.getLogger(ProtocolVersion.class.getName());
+
+    private static final byte[] HWID_MAGIC =
+    {
+        'B', 'H', 'W', 'D'
+    };
+
+    private int _version;
+    private byte[] _extraData;
+
+    @Override
+    protected void readImpl()
+    {
+        _version = readD();
+
+        if (_buf.remaining() > 0)
+        {
+            _extraData = new byte[_buf.remaining()];
+            readB(_extraData);
+        }
+    }
+
+    @Override
+    protected void runImpl()
+    {
+        final L2GameClient client = getClient();
+
+        switch (_version)
+        {
+            case 737:
+            case 740:
+            case 744:
+            case 746:
+            {
+                final String payload = extractPayloadFromExtra(_extraData);
+                if (payload == null || payload.isEmpty())
+                {
+                    LOGGER.warning("HWID payload nao encontrado no ProtocolVersion.");
+                    client.close((L2GameServerPacket) null);
+                    return;
+                }
+
+                String[] parts = payload.split("\\|");
+
+                String cpu = parts[0];
+                String hdd = parts[1];
+                String mac = parts[2];
+                String key = parts[3];
+
+                final boolean ok = HwidManager.getInstance().validateClient(client, hdd, mac, cpu, key);
+
+                if (!ok)
+                {
+                    LOGGER.warning("HWID INVALIDO - CONEXAO BLOQUEADA");
+                    client.close((L2GameServerPacket) null);
+                    return;
+                }
+
+                // libera se for válido
+                client.setHwidAuthed(true);
+                client.sendPacket(new KeyPacket(client.enableCrypt()));
+
+                break;
+            }
+
+            default:
+            {
+        
+                client.close((L2GameServerPacket) null);
+                break;
+            }
+        }
+    }
+
+    private static String extractPayloadFromExtra(byte[] extra)
+    {
+        if (extra == null || extra.length == 0)
+            return null;
+
+        final int start = indexOf(extra, HWID_MAGIC);
+        if (start < 0)
+            return null;
+
+        final int lenPos = start + 4;
+        if (extra.length < lenPos + 4)
+            return null;
+
+        final ByteBuffer lenBuffer = ByteBuffer.wrap(extra, lenPos, 4).order(ByteOrder.LITTLE_ENDIAN);
+        final int payloadLen = lenBuffer.getInt();
+
+        if (payloadLen <= 0)
+            return null;
+
+        final int payloadStart = lenPos + 4;
+        if (payloadStart + payloadLen > extra.length)
+            return null;
+
+        int realLen = payloadLen;
+        if (extra[payloadStart + payloadLen - 1] == 0)
+            realLen--;
+
+        if (realLen <= 0)
+            return null;
+
+        return new String(extra, payloadStart, realLen, StandardCharsets.US_ASCII).trim();
+    }
+
+    private static int indexOf(byte[] data, byte[] pattern)
+    {
+        if (data == null || pattern == null || pattern.length == 0 || data.length < pattern.length)
+            return -1;
+
+        outer:
+        for (int i = 0; i <= data.length - pattern.length; i++)
+        {
+            for (int j = 0; j < pattern.length; j++)
+            {
+                if (data[i + j] != pattern[j])
+                    continue outer;
+            }
+            return i;
+        }
+        return -1;
+    }
 }

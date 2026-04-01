@@ -20,9 +20,12 @@ import net.sf.l2j.gameserver.network.serverpackets.CharSelectInfo;
 import net.sf.l2j.gameserver.network.serverpackets.RestartResponse;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.taskmanager.AttackStanceTaskManager;
+import net.sf.l2j.protection.hwid.HwidDAO;
 
 public final class RequestRestart extends L2GameClientPacket
 {
+	private final HwidDAO dao = new HwidDAO();
+	
 	@Override
 	protected void readImpl()
 	{
@@ -113,6 +116,7 @@ public final class RequestRestart extends L2GameClientPacket
 			if (player.isInParty())
 				player.getParty().broadcastToPartyMembers(SystemMessage.sendString(player.getName() + " has been removed from the upcoming festival."));
 		}
+		dao.restartAndDisconnetion(player);
 		
 		player.removeFromBossZone();
 		

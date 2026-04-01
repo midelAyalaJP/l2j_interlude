@@ -1,7 +1,6 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.ThreadPool;
 import net.sf.l2j.gameserver.datatables.CharNameTable;
 import net.sf.l2j.gameserver.model.CharSelectInfoPackage;
 import net.sf.l2j.gameserver.model.actor.Player;
@@ -9,10 +8,8 @@ import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.L2GameClient.GameClientState;
 import net.sf.l2j.gameserver.network.serverpackets.CharSelected;
 import net.sf.l2j.gameserver.network.serverpackets.SSQInfo;
-import net.sf.l2j.gameserver.network.serverpackets.ServerClose;
 import net.sf.l2j.gameserver.util.FloodProtectors;
 import net.sf.l2j.gameserver.util.FloodProtectors.Action;
-import net.sf.l2j.hwid.HwidConfig;
 
 public class CharacterSelected extends L2GameClientPacket
 {
@@ -78,12 +75,7 @@ public class CharacterSelected extends L2GameClientPacket
 					cha.setOnlineStatus(true, true);
 					
 					sendPacket(SSQInfo.sendSky());
-					if (L2GameClient.BanedHwid(client.getHWID()) && HwidConfig.ALLOW_GUARD_SYSTEM)
-					{
-				       	_log.info("Player Name: [" + cha.getName() + "] - HWID: [" + client.getHWID() + "] Trying to logon with hwid ban!");
-			    		ThreadPool.schedule(new Disconect(cha), 100);			        	
-						return;
-					}
+			
 					cha.ReloadBlockChat(false);
 					
 					if (cha.ChatProtection(cha.getHWID()) && ((cha.getChatBanTimer() - 1500) > System.currentTimeMillis()))
@@ -97,23 +89,6 @@ public class CharacterSelected extends L2GameClientPacket
 			{
 				client.getActiveCharLock().unlock();
 			}
-		}
-	}
-	private class Disconect implements Runnable
-	{
-		@SuppressWarnings("unused")
-		private Player _activeChar;
-		
-		public Disconect(Player activeChar)
-		{
-			_activeChar = activeChar;
-		}
-		
-		@Override
-		public void run()
-		{
-			final L2GameClient client = getClient();				
-			client.close(ServerClose.STATIC_PACKET);
 		}
 	}
 }

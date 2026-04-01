@@ -78,8 +78,7 @@ import net.sf.l2j.gameserver.scriptings.ScriptManager;
 import net.sf.l2j.gameserver.skills.AbnormalEffect;
 import net.sf.l2j.gameserver.taskmanager.GameTimeController;
 import net.sf.l2j.gameserver.util.Broadcast;
-import net.sf.l2j.gameserver.util.HWID;
-import net.sf.l2j.hwid.Hwid;
+import net.sf.l2j.protection.hwid.HwidManager;
 
 public class EnterWorld extends L2GameClientPacket
 {
@@ -100,6 +99,15 @@ public class EnterWorld extends L2GameClientPacket
 			return;
 		}
 		
+		if (!getClient().isHwidAuthed() || getClient().getHwidSession() == null)
+	    {
+	        _log.warning("HWID not validated: " + getClient().getAccountName());
+	        getClient().closeNow();
+	        return;
+	    }
+
+	    HwidManager.getInstance().onEnterWorld(getClient());
+	    
 		if (activeChar.isGM())
 		{
 			activeChar.getAppearance().setNameColor(Config.MASTERACCESS_NAME_COLOR);
@@ -267,9 +275,7 @@ public class EnterWorld extends L2GameClientPacket
 		}
 		
 		activeChar.setEnterWorldLoc(activeChar.getX(), activeChar.getY(), -16000);
-		// IPLog.auditGMAction(activeChar.getName(), activeChar.getClient().getConnection().getInetAddress().getHostAddress(), activeChar.getHWID());
-		HWID.auditGMAction(activeChar.getHWID(), activeChar.getName());
-		Hwid.enterlog(activeChar, getClient());
+ 
 		
 		TvTEvent.onLogin(activeChar);
 		CTFEvent.onLogin(activeChar);
