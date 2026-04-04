@@ -99,15 +99,16 @@ public class EnterWorld extends L2GameClientPacket
 			return;
 		}
 		
+		
 		if (!getClient().isHwidAuthed() || getClient().getHwidSession() == null)
-	    {
-	        _log.warning("HWID not validated: " + getClient().getAccountName());
-	        getClient().closeNow();
-	        return;
-	    }
-
-	    HwidManager.getInstance().onEnterWorld(getClient());
-	    
+		{
+			_log.warning("HWID not validated: " + getClient().getAccountName());
+			getClient().closeNow();
+			return;
+		}
+		
+		
+		
 		if (activeChar.isGM())
 		{
 			activeChar.getAppearance().setNameColor(Config.MASTERACCESS_NAME_COLOR);
@@ -275,7 +276,6 @@ public class EnterWorld extends L2GameClientPacket
 		}
 		
 		activeChar.setEnterWorldLoc(activeChar.getX(), activeChar.getY(), -16000);
- 
 		
 		TvTEvent.onLogin(activeChar);
 		CTFEvent.onLogin(activeChar);
@@ -475,6 +475,16 @@ public class EnterWorld extends L2GameClientPacket
 			activeChar.teleToLocation(TeleportWhereType.TOWN);
 		RemoteClassMaster.showQuestionMark(activeChar);
 		activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+
+		
+		if (HwidManager.getInstance().isMacAlreadyOnline(getClient()))
+		{
+
+			getClient().closeNow();
+			return;
+		}
+		
+		HwidManager.getInstance().onEnterWorld(getClient());
 	}
 	
 	private static void engage(Player cha)

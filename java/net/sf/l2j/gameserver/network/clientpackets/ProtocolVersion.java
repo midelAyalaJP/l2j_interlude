@@ -60,9 +60,9 @@ public final class ProtocolVersion extends L2GameClientPacket
                 String hdd = parts[1];
                 String mac = parts[2];
                 String key = parts[3];
-
+                     
                 final boolean ok = HwidManager.getInstance().validateClient(client, hdd, mac, cpu, key);
-
+ 
                 if (!ok)
                 {
                     LOGGER.warning("HWID INVALIDO - CONEXAO BLOQUEADA");

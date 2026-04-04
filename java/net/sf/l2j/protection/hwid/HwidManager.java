@@ -3,6 +3,8 @@ package net.sf.l2j.protection.hwid;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import net.sf.l2j.gameserver.model.L2World;
+import net.sf.l2j.gameserver.model.actor.Player;
 import net.sf.l2j.gameserver.network.L2GameClient;
 
 public class HwidManager
@@ -18,7 +20,7 @@ public class HwidManager
 		return INSTANCE;
 	}
 	
-	private static final String SECRET = "BAN_L2JDEV_2026";
+	private static final String SECRET = "BAN_L2JDEV_2070";
 	
 	public boolean validateClient(L2GameClient client, String hdd, String mac, String cpu, String key)
 	{
@@ -37,9 +39,9 @@ public class HwidManager
 	        return false;
 
 	    // VALIDA KEY PRIMEIRO
-	    if (!SECRET.equals(key))
+	    if (!key.equals(SECRET))
 	    {
-	        LOGGER.warning("HWID KEY INVALIDA: " + key);
+	        LOGGER.warning(client.getAccountName() + "HWID KEY INVALIDA: " + key);
 	        return false;
 	    }
 
@@ -57,7 +59,7 @@ public class HwidManager
 
 	    client.setHwidSession(new HwidSession(deviceId, cpu, hdd, mac));
 
-	    LOGGER.info("HWID VALIDADO COM SUCESSO");
+	  
 	    return true;
 	}
 	
@@ -76,5 +78,33 @@ public class HwidManager
 		
 		dao.createSession(account, deviceId, ip, token);
 	}
-	
+	public boolean isMacAlreadyOnline(L2GameClient client)
+	{
+	    if (client == null || client.getHwidSession() == null)
+	        return false;
+
+	    String mac = client.getHwidSession().getMac();
+
+	    for (Player player : L2World.getInstance().getPlayers())
+	    {
+	        if (player == null || player.getClient() == null)
+	            continue;
+
+	        if (player.getClient().getHwidSession() == null)
+	            continue;
+
+	        String otherMac = player.getClient().getHwidSession().getMac();
+
+	        // IGNORA O PRÓPRIO PLAYER
+	        if (player.getClient() == client)
+	            continue;
+
+	        if (mac.equalsIgnoreCase(otherMac))
+	        {
+	            return true;
+	        }
+	    }
+
+	    return false;
+	}
 }
